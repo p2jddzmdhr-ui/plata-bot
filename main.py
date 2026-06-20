@@ -279,7 +279,7 @@ async def category_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def about_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
-    text = "🏪 *Plata — оригинальная техника*\n\n✅ Только оригинальные устройства\n🚚 Доставка по всей России\n💳 Рассрочка и кредит\n🔒 Гарантия на все товары"
+    text = "🏪 *Plata — оригинальная техника*\n\n✅ Только оригинальные устройства\n🚚 Доставка по всей России\n🔒 Гарантия на все товары"
     kb = InlineKeyboardMarkup([
         [InlineKeyboardButton("💬 Менеджер", url=f"https://t.me/{MANAGER}")],
         [InlineKeyboardButton("🏠 Главная", callback_data="home")],
