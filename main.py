@@ -1,8 +1,9 @@
+import os
 import logging
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, ContextTypes
+from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
 
-BOT_TOKEN = "8610839804:AAE4zbJHJYvghtjJvvEkqC183zZeWLqFtY"
+BOT_TOKEN = os.environ.get("BOT_TOKEN")
 MANAGER_USERNAME = "@aikhang"
 
 CATALOG = {
@@ -18,49 +19,50 @@ CATALOG = {
     ]},
 }
 
-async def start(update, context):
+logging.basicConfig(level=logging.INFO)
+
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [
         [InlineKeyboardButton("🛍 Каталог", callback_data="catalog")],
-        [InlineKeyboardButton("💬 Менеджер", url=f"https://t.me/{MANAGER_USERNAME.lstrip('@')}")],
+        [InlineKeyboardButton("💬 Менеджер", url=f"https://t.me/aikhang")],
         [InlineKeyboardButton("ℹ️ О нас", callback_data="about")],
     ]
-    text = "👋 Добро пожаловать в <b>Plata</b>!\n\n🍎 Техника Apple по лучшим ценам\n\nВыберите раздел:"
+    text = "👋 Добро пожаловать в <b>Plata</b>!\n\n🍎 Техника Apple по лучшим ценам"
     if update.message:
         await update.message.reply_text(text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="HTML")
     else:
         await update.callback_query.edit_message_text(text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="HTML")
 
-async def catalog(update, context):
+async def catalog(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
     keyboard = [[InlineKeyboardButton(c["name"], callback_data=f"cat_{k}")] for k, c in CATALOG.items()]
     keyboard.append([InlineKeyboardButton("🔙 Назад", callback_data="home")])
-    await query.edit_message_text("📦 <b>Каталог</b>\n\nВыберите категорию:", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="HTML")
+    await query.edit_message_text("📦 <b>Каталог</b>", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="HTML")
 
-async def category(update, context):
+async def category(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
     cat = CATALOG.get(query.data.replace("cat_", ""))
     lines = [f"<b>{cat['name']}</b>\n"] + [f"• {i['name']} — <b>{i['price']}</b>" for i in cat["items"]]
-    lines.append(f"\n💬 Для заказа: {MANAGER_USERNAME}")
-    keyboard = [[InlineKeyboardButton("💬 Заказать", url=f"https://t.me/{MANAGER_USERNAME.lstrip('@')}")], [InlineKeyboardButton("🔙 Назад", callback_data="catalog")]]
+    lines.append(f"\n💬 {MANAGER_USERNAME}")
+    keyboard = [[InlineKeyboardButton("💬 Заказать", url="https://t.me/aikhang")], [InlineKeyboardButton("🔙 Назад", callback_data="catalog")]]
     await query.edit_message_text("\n".join(lines), reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="HTML")
 
-async def about(update, context):
+async def about(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
-    text = "ℹ️ <b>Plata</b>\n\n✅ Оригинальная техника Apple\n🚚 Доставка по России\n💳 Рассрочка\n🔧 Гарантия"
+    text = "ℹ️ <b>Plata</b>\n\n✅ Оригинальная техника Apple\n🚚 Доставка по России\n💳 Рассрочка"
     await query.edit_message_text(text, reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Назад", callback_data="home")]]), parse_mode="HTML")
 
-async def router(update, context):
+async def router(update: Update, context: ContextTypes.DEFAULT_TYPE):
     data = update.callback_query.data
     if data == "home": await start(update, context)
     elif data == "catalog": await catalog(update, context)
     elif data.startswith("cat_"): await category(update, context)
     elif data == "about": await about(update, context)
 
-logging.basicConfig(level=logging.INFO)
-app = ApplicationBuilder().token(BOT_TOKEN).build()
+app = Application.builder().token(BOT_TOKEN).build()
 app.add_handler(CommandHandler("start", start))
 app.add_handler(CallbackQueryHandler(router))
 print("✅ Бот Plata запущен!")
