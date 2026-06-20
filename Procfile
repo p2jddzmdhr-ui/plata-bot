@@ -1,1 +1,1 @@
-worker: python plata_bot.py
+worker: python main.py
