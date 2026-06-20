@@ -1,10 +1,10 @@
-import os
+mport os
 import logging
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
 
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
-MANAGER_USERNAME = "@aikhang"
+MANAGER = "aikhang"
 
 CATALOG = {
     "iphone": {"name": "📱 iPhone", "items": [
@@ -24,7 +24,7 @@ logging.basicConfig(level=logging.INFO)
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [
         [InlineKeyboardButton("🛍 Каталог", callback_data="catalog")],
-        [InlineKeyboardButton("💬 Менеджер", url=f"https://t.me/aikhang")],
+        [InlineKeyboardButton("💬 Менеджер", url=f"https://t.me/{MANAGER}")],
         [InlineKeyboardButton("ℹ️ О нас", callback_data="about")],
     ]
     text = "👋 Добро пожаловать в <b>Plata</b>!\n\n🍎 Техника Apple по лучшим ценам"
@@ -33,23 +33,22 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         await update.callback_query.edit_message_text(text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="HTML")
 
-async def catalog(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def catalog_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
     keyboard = [[InlineKeyboardButton(c["name"], callback_data=f"cat_{k}")] for k, c in CATALOG.items()]
     keyboard.append([InlineKeyboardButton("🔙 Назад", callback_data="home")])
     await query.edit_message_text("📦 <b>Каталог</b>", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="HTML")
 
-async def category(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def category_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
     cat = CATALOG.get(query.data.replace("cat_", ""))
     lines = [f"<b>{cat['name']}</b>\n"] + [f"• {i['name']} — <b>{i['price']}</b>" for i in cat["items"]]
-    lines.append(f"\n💬 {MANAGER_USERNAME}")
-    keyboard = [[InlineKeyboardButton("💬 Заказать", url="https://t.me/aikhang")], [InlineKeyboardButton("🔙 Назад", callback_data="catalog")]]
+    keyboard = [[InlineKeyboardButton("💬 Заказать", url=f"https://t.me/{MANAGER}")], [InlineKeyboardButton("🔙 Назад", callback_data="catalog")]]
     await query.edit_message_text("\n".join(lines), reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="HTML")
 
-async def about(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def about_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
     text = "ℹ️ <b>Plata</b>\n\n✅ Оригинальная техника Apple\n🚚 Доставка по России\n💳 Рассрочка"
@@ -58,12 +57,13 @@ async def about(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def router(update: Update, context: ContextTypes.DEFAULT_TYPE):
     data = update.callback_query.data
     if data == "home": await start(update, context)
-    elif data == "catalog": await catalog(update, context)
-    elif data.startswith("cat_"): await category(update, context)
-    elif data == "about": await about(update, context)
+    elif data == "catalog": await catalog_handler(update, context)
+    elif data.startswith("cat_"): await category_handler(update, context)
+    elif data == "about": await about_handler(update, context)
 
-app = Application.builder().token(BOT_TOKEN).build()
-app.add_handler(CommandHandler("start", start))
-app.add_handler(CallbackQueryHandler(router))
-print("✅ Бот Plata запущен!")
-app.run_polling()
+if name == "__main__":
+    app = Application.builder().token(BOT_TOKEN).build()
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(CallbackQueryHandler(router))
+    print("✅ Бот Plata запущен!")
+    app.run_polling()
