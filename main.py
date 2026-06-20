@@ -61,8 +61,7 @@ async def router(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif data.startswith("cat_"): await category_handler(update, context)
     elif data == "about": await about_handler(update, context)
 
-if name == "__main__":
-    app = Application.builder().token(BOT_TOKEN).build()
+if name == "__main__":    app = Application.builder().token(BOT_TOKEN).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CallbackQueryHandler(router))
     print("✅ Бот Plata запущен!")
