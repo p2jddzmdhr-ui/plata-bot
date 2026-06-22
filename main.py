@@ -610,7 +610,7 @@ async def about_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
     text = "🏪 *Plata — оригинальная техника*\n\nМы помогаем выбрать и купить технику, которой можно доверять. Только оригинальные устройства, честные цены и живая консультация.\n\n✅ Гарантия на все товары\n🚚 Доставка по всей России\n\n📍 Москва, Пятницкое шоссе д.18\nТК Митинский Радиорынок\n0 вход, 1 этаж, павильон 450\n\n🕗 Режим работы: 8:00 — 20:00\n\n💬 Менеджер: @aikhang"        [InlineKeyboardButton("💬 Менеджер", url=f"https://t.me/{MANAGER}")],
-        [InlineKeyboardButton("🏠 Главная", callback_data="home")],
+    [InlineKeyboardButton("🏠 Главная", callback_data="home")],
     ])
     await q.edit_message_text(text, reply_markup=kb, parse_mode="Markdown")
 
