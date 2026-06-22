@@ -7,7 +7,29 @@ from telegram.ext import Application, CommandHandler, CallbackQueryHandler, Mess
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
 MANAGER = "aikhang"
 OWNER_ID = 294265601
-MARKUP = 0.10
+MARKUP = {
+    "iphone": 0.10,
+    "samsung": 0.10,
+    "samsung_watch": 0.15,
+    "macbook": 0.10,
+    "ipad": 0.10,
+    "airpods": 0.15,
+    "watch": 0.15,
+    "xiaomi": 0.15,
+    "honor": 0.15,
+    "pixel": 0.15,
+    "oneplus": 0.15,
+    "realme": 0.15,
+    "dyson": 0.20,
+    "vacuum": 0.20,
+    "laptops": 0.15,
+    "cameras": 0.20,
+    "garmin": 0.20,
+    "gaming": 0.15,
+    "speakers": 0.20,
+    "rugged": 0.20,
+    "accessories": 0.25,
+}
 
 CATALOG = {
     "iphone": {"name": "🍎 iPhone", "items": [
@@ -470,8 +492,9 @@ CATALOG = {
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
 
-def get_price(base_price: int) -> int:
-    return round(base_price * (1 + MARKUP) / 100) * 100
+def get_price(base_price: int, category: str = "iphone") -> int:
+    markup = MARKUP.get(category, 0.10)
+    return round(base_price * (1 + markup) / 100) * 100
 
 def parse_price_line(line: str):
     line = line.strip()
@@ -567,7 +590,8 @@ async def category_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     lines = [f"*{cat['name']}*\n"]
     for item in cat["items"]:
         price_str = f"{get_price(item['price']):,}".replace(",", " ")
-        lines.append(f"• {item['name']}\n   💰 {price_str} ₽")
+        price_str = f"{get_price(item['price'], cat_key):,}".replace(",", " ")
+lines.append(f"• {item['name']}\n   💰 {price_str} ₽")
     text = "\n".join(lines)
     if len(text) > 4000:
         text = text[:4000] + "\n\n_...уточняйте у менеджера!_"
