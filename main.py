@@ -542,7 +542,7 @@ async def category_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def about_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
-    text = "🏪 *Plata — оригинальная техника*\n\n✅ Только оригинальные устройства\n🚚 Доставка по всей России\n🔒 Гарантия на все товары"
+    text = "🏪 *Plata — оригинальная техника*\n\n🍎 iPhone • 📱 Samsung • 💻 MacBook\n📟 iPad • ⌚️ Apple Watch • 🎧 AirPods\n🔥 Xiaomi • POCO • 🏅 Honor • Huawei\n🟢 OnePlus • 📸 Google Pixel • 🍋 Realme\n♥️ Dyson • 🏠 Пылесосы • 💻 Ноутбуки\n📹 Камеры • ⌚️ Garmin • 🎮 Sony PS5\n🎼 Колонки • 🎧 Наушники • 💦 Защищённые телефоны\n🔆 Аксессуары и многое другое\n\n✅ Только оригинальные устройства\n🚚 Доставка по всей России\n🔒 Гарантия на все товары\n💳 Рассрочка и кредит\n\n📍 Москва, Пятницкое шоссе д.18\nТК Митинский Радиорынок\n0 вход, 1 этаж, павильон 450\n\n💬 Менеджер: @aikhang"
     kb = InlineKeyboardMarkup([
         [InlineKeyboardButton("💬 Менеджер", url=f"https://t.me/{MANAGER}")],
         [InlineKeyboardButton("🏠 Главная", callback_data="home")],
