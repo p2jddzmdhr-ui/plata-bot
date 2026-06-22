@@ -512,11 +512,15 @@ def parse_price_line(line: str):
     return name, price
 
 def detect_category(line: str):
-    if any(x in line for x in ['Watch Fit', 'Watch 7', 'Watch 8', 'Buds']):
+     if any(x in line for x in ['Galaxy Buds', 'Watch Fit', 'Samsung Watch']):
+        return 'samsung_watch'
+    if 'Watch 8' in line and 'Huawei' not in line:
+        return 'samsung_watch'
+    if 'Watch 7' in line and 'Huawei' not in line and 'Pixel' not in line:
         return 'samsung_watch'
     if any(x in line for x in ['iPhone', 'iphone', '🍎']):
-        if not any(x in line for x in ['iPad', 'ipad']):
-            return 'iphone'
+    if not any(x in line for x in ['iPad', 'ipad']):
+        return 'iphone'
     if any(x in line for x in ['iPad', 'ipad']):
         return 'ipad'
     if any(x in line for x in ['MacBook', 'Mac Mini', 'MacMini']):
