@@ -266,7 +266,7 @@ CATALOG = {
         {"name": "🇷🇺 POCO F6 Pro 16/1TB ⚫️", "price": 30500},
         {"name": "🇪🇺 POCO F8 Pro 12/256GB ⚫️", "price": 37500},
         {"name": "🇪🇺 POCO F8 Pro 12/512GB 🔵⚪️", "price": 40000},
-        {"nameНо": "🇪🇺 POCO F8 Ultra 12/256GB ⚫️", "price": 50000},
+        {"name": "🇪🇺 POCO F8 Ultra 12/256GB ⚫️", "price": 50000},
         {"name": "🔥🇪🇺 POCO Pad M1 8/256GB ⚫️", "price": 18000},
     ]},    
     "honor": {"name": "🏅 Honor / Huawei", "items": [
