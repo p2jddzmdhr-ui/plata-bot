@@ -507,7 +507,7 @@ def catalog_keyboard():
     return InlineKeyboardMarkup(kb)
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    text = "👋 Добро пожаловать в *Plata*!\n\nОригинальная техника по лучшим ценам 🔥\nДоставка по всей России 🚚\n\nВыберите раздел:"
+    text = "👋 Добро пожаловать в *Plata*!\n\nОригинальная техника по лучшим ценам 🔥\n\n📱💻🖥⌚️🎧🖱⌨️🎮\n\n📍 Москва, ТК Митинский Радиорынок, пав. 450\n🚚 Доставка по всей России\n✅ Гарантия на все товары\n\nВыберите раздел:"
     if update.message:
         await update.message.reply_text(text, reply_markup=main_keyboard(), parse_mode="Markdown")
     else:
@@ -542,7 +542,7 @@ async def category_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def about_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
-    text = "🏪 *Plata — оригинальная техника*\n\n🍎 iPhone • 📱 Samsung • 💻 MacBook\n📟 iPad • ⌚️ Apple Watch • 🎧 AirPods\n🔥 Xiaomi • POCO • 🏅 Honor • Huawei\n🟢 OnePlus • 📸 Google Pixel\n♥️ Dyson • 💻 Ноутбуки\n📹 Камеры  • 🎮 PS5\🔆 Аксессуары и многое другое\n\n✅ Только оригинальные устройства\n🚚 Доставка по всей России\n🔒 Гарантия на все товары\n💳 Рассрочка и кредит\n\n📍 Москва, Пятницкое шоссе д.18\nТК Митинский Радиорынок\n0 вход, 1 этаж, павильон 450\n\n💬 Менеджер: @aikhang"
+    text = "🏪 *Plata — оригинальная техника*\n\n🍎 iPhone • 📱 Samsung • 💻 MacBook\n📟 iPad • ⌚️ Apple Watch • 🎧 AirPods\n🔥 Xiaomi • POCO • 🏅 Honor • Huawei\n🟢 OnePlus • 📸 Google Pixel\n♥️ Dyson • 💻 Ноутбуки\n📹 Камеры  • 🎮 PS5\n🔆 Аксессуары и многое другое\n\n✅ Только оригинальные устройства\n🚚 Доставка по всей России\n🔒 Гарантия на все товары\n💳 Рассрочка и кредит\n\n📍 Москва, Пятницкое шоссе д.18\nТК Митинский Радиорынок\n0 вход, 1 этаж, павильон 450\n\n💬 Менеджер: @aikhang"
     kb = InlineKeyboardMarkup([
         [InlineKeyboardButton("💬 Менеджер", url=f"https://t.me/{MANAGER}")],
         [InlineKeyboardButton("🏠 Главная", callback_data="home")],
