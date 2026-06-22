@@ -502,9 +502,9 @@ def detect_category(line: str):
         return 'airpods'
     if any(x in line for x in ['Watch SE', 'Watch S1', 'Watch Ultra', 'Watch S10', 'Watch S11']):
         return 'watch'
-    if any(x in line for x in ['A07', 'A26', 'A36', 'A37', 'A56', 'A57', 'S25', 'S26', 'Z Flip', 'Z Fold', 'Galaxy', 'Tab S']):
+    if any(x in line for x in ['Samsung', 'A07', 'A26', 'A36', 'A37', 'A56', 'A57', 'S25', 'S26', 'Z Flip', 'Z Fold', 'Galaxy', 'Tab S']):
         return 'samsung'
-    if any(x in line for x in ['POCO', 'Xiaomi', 'Redmi', 'Mi Pad', 'Mi 15', 'Mi 17', 'Note 15']):
+    if any(x in line for x in ['POCO', 'Xiaomi', 'Redmi', 'Mi Pad', 'Mi 15', 'Mi 17', 'Note 14', 'Note 15']):
         return 'xiaomi'
     if any(x in line for x in ['HONOR', 'Huawei']):
         return 'honor'
@@ -516,19 +516,19 @@ def detect_category(line: str):
         return 'realme'
     if any(x in line for x in ['Dyson', 'Dreame AirStyle', 'Dreame Aero']):
         return 'dyson'
-    if any(x in line for x in ['Roborock', 'Dreame X', 'Dreame L', 'Dreame H', 'Dreame R', 'Dreame V', 'Vacuum']):
+    if any(x in line for x in ['Roborock', 'Dreame X', 'Dreame L', 'Dreame H', 'Dreame R', 'Dreame V', 'Dreame G', 'Vacuum', 'пылесос', 'Пылесос']):
         return 'vacuum'
-    if any(x in line for x in ['Nitro', 'VivoBook', 'ZenBook', 'TUF', 'ROG', 'Legion', 'Katana', 'Vector', 'Titan', 'MateBook', 'ProBook', 'IdeaPad', 'Гравитон', 'Gigabyte', 'Machcreator']):
+    if any(x in line for x in ['Nitro', 'VivoBook', 'ZenBook', 'TUF', 'ROG', 'Legion', 'Katana', 'Vector', 'Titan', 'MateBook', 'ProBook', 'IdeaPad', 'Гравитон', 'Gigabyte', 'Machcreator', 'Raider']):
         return 'laptops'
     if any(x in line for x in ['Insta', 'DJI', 'Osmo']):
         return 'cameras'
     if 'GARMIN' in line:
         return 'garmin'
-    if any(x in line for x in ['PS5', 'Джойстик']):
+    if any(x in line for x in ['PS5', 'Джойстик', 'Дисковод']):
         return 'gaming'
-    if any(x in line for x in ['JBL', 'Станция', 'SberBoom', 'Marshall', 'Sennheiser', 'Sony WH', 'Momentum']):
+    if any(x in line for x in ['JBL', 'Станция', 'SberBoom', 'Marshall', 'Sennheiser', 'Sony WH', 'Momentum', 'Капсула']):
         return 'speakers'
-    if any(x in line for x in ['Unihertz', 'DOOGEE', 'Oukitel', 'Ulefone', 'BV BL', 'Tank 3']):
+    if any(x in line for x in ['Unihertz', 'DOOGEE', 'Oukitel', 'Ulefone', 'BV BL', 'BV 62', 'Tank 3']):
         return 'rugged'
     return None
 
