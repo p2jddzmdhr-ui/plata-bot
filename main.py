@@ -512,6 +512,8 @@ def parse_price_line(line: str):
     return name, price
 
 def detect_category(line: str):
+    if any(x in line for x in ['Nitro', 'VivoBook', 'ZenBook', 'TUF', 'ROG', 'Legion', 'Katana', 'Vector', 'Titan', 'MateBook', 'ProBook', 'IdeaPad', 'Гравитон', 'Gigabyte', 'Machcreator', 'Raider', 'Samsung Book', 'Book 6']):
+        return 'laptops'
     if any(x in line for x in ['HONOR', 'Huawei']):
         return 'honor'
     if any(x in line for x in ['Galaxy Buds', 'Watch Fit', 'Samsung Watch']):
@@ -545,8 +547,6 @@ def detect_category(line: str):
         return 'dyson'
     if any(x in line for x in ['Roborock', 'Dreame X', 'Dreame L', 'Dreame H', 'Dreame R', 'Dreame V', 'Dreame G', 'Vacuum']):
         return 'vacuum'
-    if any(x in line for x in ['Nitro', 'VivoBook', 'ZenBook', 'TUF', 'ROG', 'Legion', 'Katana', 'Vector', 'Titan', 'MateBook', 'ProBook', 'IdeaPad', 'Гравитон', 'Gigabyte', 'Machcreator', 'Raider']):
-        return 'laptops'
     if any(x in line for x in ['Insta', 'DJI', 'Osmo']):
         return 'cameras'
     if 'GARMIN' in line:
