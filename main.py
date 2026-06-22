@@ -312,8 +312,7 @@ async def category_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
     lines = [f"*{cat['name']}*\n"]
     for item in cat["items"]:
-        lines.append(f"• {item['name']} — *{get_price(item['price']):,} ₽*".replace(",", " "))
-    text = "\n".join(lines)
+        lines.append(f"• {item['name']}\n  💰 *{get_price(item['price']):,} ₽*".replace(",", " "))    text = "\n".join(lines)
     if len(text) > 4000:
         text = text[:4000] + "\n\n_...уточняйте у менеджера!_"
     kb = InlineKeyboardMarkup([
