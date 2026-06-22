@@ -1,4 +1,72 @@
-{"name": "🇪🇺🍎 iPhone 17 Pro Max 256GB 🟠", "price": 100000},
+import os
+import re
+import logging
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters, ContextTypes
+
+BOT_TOKEN = os.environ.get("BOT_TOKEN")
+MANAGER = "aikhang"
+OWNER_ID = 294265601
+MARKUP = 0.10
+
+CATALOG = {
+    "iphone": {"name": "🍎 iPhone", "items": [
+        {"name": "🇪🍎 iPhone 13 128GB ⚫️", "price": 33000},
+        {"name": "🇪🇺🍎 iPhone 13 512GB ⚪️", "price": 42000},
+        {"name": "🇪🇺🍎 iPhone 14 128GB 🔴🟡", "price": 38000},
+        {"name": "🇪🇺🍎 iPhone 14 128GB 🔵", "price": 41000},
+        {"name": "🇪🇺🍎 iPhone 14 512GB ⚫️⚪️", "price": 46000},
+        {"name": "🇪🇺🍎 iPhone 14 Plus 128GB 🟡", "price": 43000},
+        {"name": "🇪🇺🍎 iPhone 15 128GB 🔵", "price": 46500},
+        {"name": "🇪🇺🍎 iPhone 15 128GB ⚫️", "price": 47000},
+        {"name": "🇪🇺🍎 iPhone 15 256GB ⚫️", "price": 53500},
+        {"name": "🇪🇺🍎 iPhone 15 Plus 128GB 🟡", "price": 48000},
+        {"name": "🇪🇺🍎 iPhone 15 Plus 128GB 🔵", "price": 48500},
+        {"name": "🇭🇰🍎 iPhone 15 Pro 128GB 🔵", "price": 66500},
+        {"name": "🇯🇵🍎 iPhone 15 Pro Max 1TB ⚫️⚙️🔵", "price": 96000},
+        {"name": "🇪🍎 iPhone 16e 256GB ⚪️", "price": 42000},
+        {"name": "🇪🇺🇯🇵🍎 iPhone 16 128GB 🔵🟢", "price": 49500},
+        {"name": "🇪🇺🍎 iPhone 16 128GB 💖⚪️", "price": 50000},
+        {"name": "🇪🇺🍎 iPhone 16 256GB 💖", "price": 58500},
+        {"name": "🇪🇺🍎 iPhone 16 Plus 128GB ⚫️⚪️🔵💖🟢", "price": 58000},
+        {"name": "🇪🇺🍎 iPhone 16 Plus 256GB 💖", "price": 65000},
+        {"name": "🇭🍎 iPhone 16 Pro 128GB ⚪️", "price": 70500},
+        {"name": "🇭🇰🍎 iPhone 16 Pro 128GB 🟠⚙️", "price": 74000},
+        {"name": "🇭🇰🍎 iPhone 16 Pro 128GB ⚫️", "price": 75000},
+        {"name": "🇪🇺🍎 iPhone 16 Pro 1TB ⚪️", "price": 104500},
+        {"name": "🇪🇺🍎 iPhone 16 Pro Max 256GB 🟠", "price": 85000},
+        {"name": "🇺🇸🍎 iPhone 16 Pro Max 512GB ⚫️", "price": 97000},
+        {"name": "🇪🇺🍎 iPhone 16 Pro Max 512GB 🟠", "price": 101500},
+        {"name": "🇪🇺🍎 iPhone 16 Pro Max 1TB 🟠", "price": 114000},
+        {"name": "🇯🇵🍎 iPhone 17e 256GB 💖⚪️", "price": 44000},
+        {"name": "🇪🇺🍎 iPhone 17e 256GB ⚪️", "price": 51000},
+        {"name": "🇯🇵🍎 iPhone 17e 512GB ⚫️⚪️", "price": 57000},
+        {"name": "🇪🇺🍎 iPhone 17e 512GB 💖", "price": 62000},
+        {"name": "🇯🇵🍎 iPhone 17 256GB ⚫️🟣🔵⚪️🟢", "price": 61000},
+        {"name": "🇪🇺🍎 iPhone 17 256GB ⚫️🔵⚪️🟢🟣", "price": 64500},
+        {"name": "🇯🇵🍎 iPhone 17 512GB ⚫️", "price": 75500},
+        {"name": "🇯🇵🍎 iPhone 17 Air 256GB 🔵", "price": 66500},
+        {"name": "🇯🇵🍎 iPhone 17 Air 256GB ⚫️🟡⚪️", "price": 67500},
+        {"name": "🇯🇵🍎 iPhone 17 Air 512GB 🔵", "price": 71000},
+        {"name": "🇯🇵🍎 iPhone 17 Air 512GB 🟡", "price": 71500},
+        {"name": "🇯🇵🍎 iPhone 17 Air 1TB 🔵", "price": 84500},
+        {"name": "🇯🇵🍎 iPhone 17 Pro 256GB 🟠", "price": 82000},
+        {"name": "🇯🇵🍎 iPhone 17 Pro 256GB ⚪", "price": 83500},
+        {"name": "🇯🇵🍎 iPhone 17 Pro 256GB 🔵", "price": 85000},
+        {"name": "🇪🇺🍎 iPhone 17 Pro 256GB 🟠", "price": 90500},
+        {"name": "🇪🍎 iPhone 17 Pro 256GB ⚪️", "price": 92000},
+        {"name": "🇪🇺🍎 iPhone 17 Pro 256GB 🔵", "price": 92500},
+        {"name": "🇯🇵🍎 iPhone 17 Pro 512GB 🔵🟠", "price": 99500},
+        {"name": "🇯🇵🍎 iPhone 17 Pro 512GB ⚪️", "price": 103000},
+        {"name": "🇪🇺🍎 iPhone 17 Pro 512GB 🔵🟠⚪️", "price": 107500},
+        {"name": "🇯🇵🍎 iPhone 17 Pro 1TB 🟠", "price": 116000},
+        {"name": "🇯🇵🍎 iPhone 17 Pro 1TB 🔵", "price": 119000},
+        {"name": "🇯🇵🍎 iPhone 17 Pro 1TB ⚪️", "price": 121000},
+        {"name": "🇪🇺🍎 iPhone 17 Pro 1TB ⚪️🟠", "price": 128000},
+        {"name": "🇯🇵🍎 iPhone 17 Pro Max 256GB 🟠", "price": 86000},
+        {"name": "🇯🇵🍎 iPhone 17 Pro Max 256GB 🔵", "price": 88000},
+        {"name": "🇯🇵🍎 iPhone 17 Pro Max 256GB ⚪️", "price": 94000},
+        {"name": "🇪🇺🍎 iPhone 17 Pro Max 256GB 🟠", "price": 100000},
         {"name": "🇪🇺🍎 iPhone 17 Pro Max 256GB 🔵", "price": 100500},
         {"name": "🇪🇺🍎 iPhone 17 Pro Max 256GB ⚪️", "price": 103000},
         {"name": "🇯🇵🍎 iPhone 17 Pro Max 512GB 🔵⚪️", "price": 108000},
@@ -11,12 +79,12 @@
         {"name": "🇪🇺🍎 iPhone 17 Pro Max 1TB 🔵⚪️", "price": 136000},
         {"name": "🇪🇺🍎 iPhone 17 Pro Max 1TB 🟠", "price": 137500},
         {"name": "🇯🇵🍎 iPhone 17 Pro Max 2TB 🟠", "price": 140000},
-        {"name": "🇯🍎 iPhone 17 Pro Max 2TB 🔵", "price": 149000},
+        {"name": "🇯🇵🍎 iPhone 17 Pro Max 2TB 🔵", "price": 149000},
         {"name": "🇯🇵🍎 iPhone 17 Pro Max 2TB ⚪️", "price": 152000},
         {"name": "🇪🇺🍎 iPhone 17 Pro Max 2TB 🔵🟠", "price": 160000},
         {"name": "🇪🇺🍎 iPhone 17 Pro Max 2TB ⚪️", "price": 162000},
     ]},
-"samsung": {"name": "📱 Samsung", "items": [
+    "samsung": {"name": "📱 Samsung", "items": [
         {"name": "🇷🇺 Samsung A07 4/64GB ⚫️", "price": 6600},
         {"name": "🇷🇺 Samsung A07 4/128GB ⚫️🟢", "price": 7600},
         {"name": "🇷🇺 Samsung A26 8/256GB ⚫️", "price": 17000},
@@ -27,7 +95,7 @@
         {"name": "🇪🇺 Samsung A37 12/256GB 🟢", "price": 25000},
         {"name": "🇪🇺 Samsung A56 8/256GB 🟢", "price": 25000},
         {"name": "🇪🇺 Samsung A57 8/128GB 🔵🟣⚙️", "price": 24500},
-        {"name": "🇷🇺🇪🇺 Samsung A57 8/256GB 🟣🔵⚙️", "price": 26600},
+        {"name": "🇷🇺🇪 Samsung A57 8/256GB 🟣🔵⚙️", "price": 26600},
         {"name": "🇪🇺 Samsung A57 12/512GB ⚙️🩵", "price": 31600},
         {"name": "🇪🇺 Samsung S25 Fe 8/128GB ⚫️", "price": 32000},
         {"name": "🇪🇺 Samsung S25 Fe 8/256GB 🔵⚪️", "price": 37000},
@@ -44,20 +112,20 @@
         {"name": "🇪🇺 Samsung S26+ 12/256GB ⚫️🟣⚪️", "price": 57600},
         {"name": "🇪🇺 Samsung S26+ 12/512GB ⚫️💖🟣", "price": 65000},
         {"name": "🇪🇺 Samsung S26 Ultra 12/256GB 🟣🩵", "price": 67500},
-        {"name": "🇪🇺 Samsung S26 Ultra 12/512GB ⚪️🟣🩵", "price": 82000},
+        {"name": "🇪🇺 Samsung S26 Ultra 12/512GB ⚪🟣🩵", "price": 82000},
         {"name": "🇪🇺 Samsung Z Flip 7 Fe 8/128GB ⚫️", "price": 45500},
         {"name": "🇷🇺 Samsung Z Flip 7 12/256GB ⚫️🔵", "price": 62000},
         {"name": "🇷🇺 Samsung Z Flip 7 12/256GB 🔴", "price": 62500},
         {"name": "🇪🇺 Samsung Z Flip 7 12/512GB ⚫️", "price": 66000},
-        {"name": "🇭 Samsung Z Fold 7 12/256GB ⚪️", "price": 92000},
-        {"name": "🇪 Samsung Z Fold 7 12/256GB 🔵⚪️", "price": 92500},
+        {"name": "🇭🇰 Samsung Z Fold 7 12/256GB ⚪", "price": 92000},
+        {"name": "🇪🇺 Samsung Z Fold 7 12/256GB 🔵⚪️", "price": 92500},
         {"name": "🇪🇺 Samsung Z Fold 7 12/512GB ⚫️🔵⚪️", "price": 104000},
         {"name": "🇪🇺 Samsung Watch Fit 3 ⚪️💖", "price": 3000},
         {"name": "🇪🇺 Samsung Watch 7 44 LTE 🟢", "price": 12500},
         {"name": "🇷🇺🇪🇺 Samsung Watch 8 44 ⚫️", "price": 16000},
         {"name": "🇪🇺 Samsung Watch 8 Ultra 2025 47 LTE", "price": 24000},
         {"name": "🇪🇺 Samsung Galaxy Buds 4 ⚫️⚪️", "price": 8900},
-        {"name": "🇪🇺 Samsung Galaxy Buds 4 Pro ⚪", "price": 12400},
+        {"name": "🇪🇺 Samsung Galaxy Buds 4 Pro ⚪️", "price": 12400},
         {"name": "🇪🇺 Samsung Tab S10 Fe 12/256GB Wi-Fi", "price": 34000},
         {"name": "🇪🇺 Samsung Tab S10 Fe+ 12/256GB Wi-Fi 🔵", "price": 40500},
     ]},
@@ -70,7 +138,7 @@
         {"name": "🍎💻 MacBook Air 13 M4/16/256 ⭐️", "price": 77000},
         {"name": "🍎💻 MacBook Air 13 M4/24/512 ⭐️", "price": 99500},
         {"name": "🍎💻 MacBook Air 13 M5/16/512 🔵⭐️⚫️", "price": 79500},
-        {"name": "🍎💻 MacBook Air 13 M5/16/1TB ⚫🔵⭐️⚪️", "price": 95000},
+        {"name": "🍎💻 MacBook Air 13 M5/16/1TB ⚫️🔵⭐️⚪️", "price": 95000},
         {"name": "🍎💻 MacBook Air 13 M5/24/1TB ⚪️⚫️", "price": 112000},
         {"name": "🍎💻 MacBook Air 15 M4/16/256 🔵", "price": 82000},
         {"name": "🍎💻 MacBook Air 15 M5/16/512 ⚫️⭐️🔵⚪️", "price": 95500},
@@ -124,8 +192,8 @@
     ]},
     "xiaomi": {"name": "🔥 Xiaomi / POCO", "items": [
         {"name": "🇪🇺 POCO X7 12/512GB 🟢⚪️", "price": 21200},
-        {"name": "🇪🇺 POCO X7 Pro 12/512GB ⚫️🟡🟢", "price": 26000},
-        {"name": "🆕🇷🇺🇪🇺 POCO X8 Pro 8/512GB ⚪️🟢", "price": 25500},
+        {"name": "🇪🇺 POCO X7 Pro 12/512GB ⚫🟡🟢", "price": 26000},
+        {"name": "🆕🇷🇺🇪 POCO X8 Pro 8/512GB ⚪️🟢", "price": 25500},
         {"name": "🆕🇷🇺 POCO X8 Pro 12/512GB 🟢⚪️", "price": 28000},
         {"name": "🆕🇷🇺 POCO X8 Pro Max 12/256GB ⚫️🔵", "price": 32000},
         {"name": "🆕🇷🇺 POCO X8 Pro Max 12/512GB 🔵", "price": 34500},
@@ -141,10 +209,10 @@
         {"name": "🇷🇺 Xiaomi Mi 17T Pro 12/256GB ⚫️", "price": 48500},
         {"name": "🇷🇺 Xiaomi Mi 17T Pro 12/512GB ⚫️🔵🟣", "price": 52000},
         {"name": "🇪🇺 Xiaomi Mi 17T Pro 12/1TB ⚫️🔵", "price": 58500},
-        {"name": "🇪🇺 Xiaomi Mi 17 Ultra 16/512GB ⚫️⚪️", "price": 85000},
+        {"name": "🇪 Xiaomi Mi 17 Ultra 16/512GB ⚫️⚪️", "price": 85000},
         {"name": "🇪🇺 Xiaomi Mi 17 Ultra 16/1TB ⚫️⚪️", "price": 94000},
         {"name": "🔥🇪🇺🇷🇺 Xiaomi Mi Pad 8 8/256GB ⚫️🔵", "price": 29000},
-        {"name": "🔥🇷🇺🇪🇺 Xiaomi Mi Pad 8 Pro 8/256GB ⚫️🔵🟢", "price": 41000},
+        {"name": "🔥🇷🇺🇪 Xiaomi Mi Pad 8 Pro 8/256GB ⚫️🔵🟢", "price": 41000},
     ]},
     "honor": {"name": "🏅 Honor / Huawei", "items": [
         {"name": "🔥🇪🇺 HONOR 400 8/512GB ⚫️🟡", "price": 27500},
@@ -158,8 +226,8 @@
     ]},
     "pixel": {"name": "📸 Google Pixel", "items": [
         {"name": "🔥🇯🇵 Pixel 9a 8/128GB ⚫️", "price": 29600},
-        {"name": "🔥🇬 Pixel 9a 8/256GB ⚫️", "price": 31000},
-        {"name": "🔥🇮 Pixel 10a 8/256GB ⚫️🟣🟢", "price": 35700},
+        {"name": "🔥🇬🇧 Pixel 9a 8/256GB ⚫️", "price": 31000},
+        {"name": "🔥🇮🇳 Pixel 10a 8/256GB ⚫️🟣🟢", "price": 35700},
         {"name": "🔥🇬🇧 Pixel 10 12/128GB 🩵", "price": 44500},
         {"name": "🔥🇮🇳 Pixel 10 12/256GB ⚫️🩵🔵", "price": 46500},
         {"name": "🔥🇨🇦 Pixel 10 Pro XL 16/256GB ⚫️⚪️🔵🟢", "price": 66500},
@@ -167,13 +235,12 @@
         {"name": "🔥⌚️ Pixel Watch 4 46 ⚫️", "price": 26800},
     ]},
 }
+
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
 
-
 def get_price(base_price: int) -> int:
     return round(base_price * (1 + MARKUP) / 100) * 100
-
 
 def parse_price_line(line: str):
     line = line.strip()
@@ -190,7 +257,6 @@ def parse_price_line(line: str):
         return None
     return name, price
 
-
 def detect_category(line: str):
     if any(x in line for x in ['iPhone', 'iphone']):
         return 'iphone'
@@ -202,8 +268,7 @@ def detect_category(line: str):
         return 'airpods'
     if any(x in line for x in ['Watch SE', 'Watch S1', 'Watch Ultra', 'Watch S10', 'Watch S11']):
         return 'watch'
-    if any(x in line for x in ['Samsung', ' A07', ' A26', ' A36', ' A37', ' A56', ' A57',
-                                 ' S25', ' S26', ' Z Flip', ' Z Fold', 'Galaxy', 'Tab S']):
+    if any(x in line for x in ['Samsung', ' A07', ' A26', ' A36', ' A37', ' A56', ' A57', ' S25', ' S26', ' Z Flip', ' Z Fold', 'Galaxy', 'Tab S']):
         return 'samsung'
     if any(x in line for x in ['POCO', 'Xiaomi', 'Redmi', 'Mi Pad', 'Mi 15', 'Mi 17', 'Note 15']):
         return 'xiaomi'
@@ -213,7 +278,6 @@ def detect_category(line: str):
         return 'pixel'
     return None
 
-
 def main_keyboard():
     return InlineKeyboardMarkup([
         [InlineKeyboardButton("📦 Каталог", callback_data="catalog")],
@@ -221,13 +285,10 @@ def main_keyboard():
         [InlineKeyboardButton("ℹ️ О нас", callback_data="about")],
     ])
 
-
 def catalog_keyboard():
-    kb = [[InlineKeyboardButton(cat["name"], callback_data=f"cat_{key}")]
-          for key, cat in CATALOG.items()]
+    kb = [[InlineKeyboardButton(cat["name"], callback_data=f"cat_{key}")] for key, cat in CATALOG.items()]
     kb.append([InlineKeyboardButton("🏠 Главная", callback_data="home")])
     return InlineKeyboardMarkup(kb)
-
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = "👋 Добро пожаловать в *Plata*!\n\nОригинальная техника по лучшим ценам 🔥\nДоставка по всей России 🚚\n\nВыберите раздел:"
@@ -236,12 +297,10 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         await update.callback_query.edit_message_text(text, reply_markup=main_keyboard(), parse_mode="Markdown")
 
-
 async def catalog_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
     await q.edit_message_text("📦 *Каталог*\n\nВыберите категорию:", reply_markup=catalog_keyboard(), parse_mode="Markdown")
-
 
 async def category_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
@@ -263,7 +322,6 @@ async def category_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     ])
     await q.edit_message_text(text, reply_markup=kb, parse_mode="Markdown")
 
-
 async def about_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
@@ -273,7 +331,8 @@ async def about_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton("🏠 Главная", callback_data="home")],
     ])
     await q.edit_message_text(text, reply_markup=kb, parse_mode="Markdown")
-    async def handle_price_update(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
+async def handle_price_update(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.message.from_user.id
     if user_id != OWNER_ID:
         return
@@ -307,14 +366,12 @@ async def about_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         await update.message.reply_text("⚠️ Категории не распознаны")
 
-
 async def router(update: Update, context: ContextTypes.DEFAULT_TYPE):
     d = update.callback_query.data
     if d == "home": await start(update, context)
     elif d == "catalog": await catalog_handler(update, context)
     elif d.startswith("cat_"): await category_handler(update, context)
     elif d == "about": await about_handler(update, context)
-
 
 app = Application.builder().token(BOT_TOKEN).build()
 app.add_handler(CommandHandler("start", start))
