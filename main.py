@@ -512,15 +512,17 @@ def parse_price_line(line: str):
     return name, price
 
 def detect_category(line: str):
-     if any(x in line for x in ['Galaxy Buds', 'Watch Fit', 'Samsung Watch']):
+    if any(x in line for x in ['HONOR', 'Huawei']):
+        return 'honor'
+    if any(x in line for x in ['Galaxy Buds', 'Watch Fit', 'Samsung Watch']):
         return 'samsung_watch'
     if 'Watch 8' in line and 'Huawei' not in line:
         return 'samsung_watch'
     if 'Watch 7' in line and 'Huawei' not in line and 'Pixel' not in line:
         return 'samsung_watch'
     if any(x in line for x in ['iPhone', 'iphone', '🍎']):
-    if not any(x in line for x in ['iPad', 'ipad']):
-        return 'iphone'
+        if not any(x in line for x in ['iPad', 'ipad']):
+            return 'iphone'
     if any(x in line for x in ['iPad', 'ipad']):
         return 'ipad'
     if any(x in line for x in ['MacBook', 'Mac Mini', 'MacMini']):
@@ -529,12 +531,10 @@ def detect_category(line: str):
         return 'airpods'
     if any(x in line for x in ['Watch SE', 'Watch S1', 'Watch Ultra', 'Watch S10', 'Watch S11']):
         return 'watch'
-    if any(x in line for x in ['Samsung', 'A07', 'A26', 'A36', 'A37', 'A56', 'A57', 'S25', 'S26', 'Z Flip', 'Z Fold', 'Galaxy', 'Tab S', 'Watch Fit', 'Watch 7', 'Watch 8', 'Buds']):
+    if any(x in line for x in ['Samsung', 'A07', 'A26', 'A36', 'A37', 'A56', 'A57', 'S25', 'S26', 'Z Flip', 'Z Fold', 'Galaxy', 'Tab S']):
         return 'samsung'
     if any(x in line for x in ['POCO', 'Xiaomi', 'Redmi', 'Mi Pad', 'Mi 15', 'Mi 17', 'Note 14', 'Note 15']):
         return 'xiaomi'
-    if any(x in line for x in ['HONOR', 'Huawei']):
-        return 'honor'
     if 'Pixel' in line:
         return 'pixel'
     if 'OnePlus' in line:
@@ -543,7 +543,7 @@ def detect_category(line: str):
         return 'realme'
     if any(x in line for x in ['Dyson', 'Dreame AirStyle', 'Dreame Aero']):
         return 'dyson'
-    if any(x in line for x in ['Roborock', 'Dreame X', 'Dreame L', 'Dreame H', 'Dreame R', 'Dreame V', 'Dreame G', 'Vacuum', 'пылесос', 'Пылесос']):
+    if any(x in line for x in ['Roborock', 'Dreame X', 'Dreame L', 'Dreame H', 'Dreame R', 'Dreame V', 'Dreame G', 'Vacuum']):
         return 'vacuum'
     if any(x in line for x in ['Nitro', 'VivoBook', 'ZenBook', 'TUF', 'ROG', 'Legion', 'Katana', 'Vector', 'Titan', 'MateBook', 'ProBook', 'IdeaPad', 'Гравитон', 'Gigabyte', 'Machcreator', 'Raider']):
         return 'laptops'
@@ -555,10 +555,10 @@ def detect_category(line: str):
         return 'gaming'
     if any(x in line for x in ['JBL', 'Станция', 'SberBoom', 'Marshall', 'Sennheiser', 'Sony WH', 'Momentum', 'Капсула']):
         return 'speakers'
-    if any(x in line for x in ['Unihertz', 'DOOGEE', 'Oukitel', 'Ulefone', 'BV BL', 'BV 62', 'Tank 3']):
+    if any(x in line for x in ['Unihertz', 'DOOGEE', 'Oukitel', 'Ulefone', 'BV BL', 'Tank 3']):
         return 'rugged'
     return None
-
+    
 def main_keyboard():
     return InlineKeyboardMarkup([
         [InlineKeyboardButton("📦 Каталог", callback_data="catalog")],
