@@ -591,7 +591,6 @@ async def category_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     for item in cat["items"]:
         price_str = f"{get_price(item['price']):,}".replace(",", " ")
         price_str = f"{get_price(item['price'], cat_key):,}".replace(",", " ")
-lines.append(f"• {item['name']}\n   💰 {price_str} ₽")
     text = "\n".join(lines)
     if len(text) > 4000:
         text = text[:4000] + "\n\n_...уточняйте у менеджера!_"
