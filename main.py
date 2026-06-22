@@ -16,6 +16,7 @@ MARKUP = {
     "airpods": 0.15,
     "watch": 0.15,
     "xiaomi": 0.15,
+    "poco": 0.15,
     "honor": 0.15,
     "pixel": 0.15,
     "oneplus": 0.15,
@@ -226,25 +227,7 @@ CATALOG = {
         {"name": "⌚️ Apple Watch Ultra 3 49 Black Ti Black 🖤", "price": 55500},
         {"name": "⌚️ Apple Watch Ultra 3 49 Black Milanese Loop 🖤", "price": 65500},
     ]},
-    "xiaomi": {"name": "🔥 Xiaomi / POCO", "items": [
-        {"name": "🇷🇺 Xiaomi A5 4/128GB 🟢🟡", "price": 6700},
-        {"name": "🇷🇺 Xiaomi 15C 4/256GB 🟢", "price": 9200},
-        {"name": "🇷🇺 Xiaomi 15 6/128GB ⚙️🟣", "price": 10300},
-        {"name": "🇷🇺 Xiaomi 15 8/256GB 🟣", "price": 12500},
-        {"name": "🇷🇺 POCO C85 6/128GB ⚫🟢🟣", "price": 7700},
-        {"name": "🇷🇺 POCO C85 8/256GB ⚫️🟢", "price": 8700},
-        {"name": "🇷🇺🇪🇺 POCO M8 Pro 12/512GB ⚪️🟢", "price": 24000},
-        {"name": "🇷🇺🇪🇺 POCO X7 12/512GB 🟢⚪️", "price": 21200},
-        {"name": "🇪🇺 POCO X7 Pro 12/512GB ⚫️🟡🟢", "price": 26000},
-        {"name": "🆕🇷🇺🇪🇺 POCO X8 Pro 8/512GB ⚪️🟢", "price": 25500},
-        {"name": "🆕🇷🇺 POCO X8 Pro 12/512GB ⚫️🟢⚪️", "price": 27800},
-        {"name": "🆕🇷🇺 POCO X8 Pro Max 12/256GB ⚫️🔵", "price": 32000},
-        {"name": "🆕🇷🇺 POCO X8 Pro Max 12/512GB 🔵", "price": 34500},
-        {"name": "🇷🇺 POCO F6 Pro 12/512GB ⚫️", "price": 26000},
-        {"name": "🇷🇺 POCO F6 Pro 16/1TB ⚫️", "price": 30500},
-        {"name": "🇪🇺 POCO F8 Pro 12/256GB ⚫️", "price": 37500},
-        {"name": "🇪🇺 POCO F8 Pro 12/512GB 🔵⚪️", "price": 40000},
-        {"name": "🇪🇺 POCO F8 Ultra 12/256GB ⚫️", "price": 50000},
+    "xiaomi": {"name": "🔥 Xiaomi", "items": [
         {"name": "🇪🇺 Xiaomi Note 14 8/256GB ⚫️🟣", "price": 12900},
         {"name": "🇷🇺 Xiaomi Note 14S 8/128GB 🔵🟣", "price": 13000},
         {"name": "🇷🇺 Xiaomi Note 15 6/128GB ⚫️🔵🟢", "price": 11700},
@@ -268,7 +251,24 @@ CATALOG = {
         {"name": "🔥🇷🇺 Xiaomi Mi Pad 8 8/128GB ⚫️🔵🟢", "price": 27000},
         {"name": "🔥🇷🇺 Xiaomi Mi Pad 8 8/256GB ⚫️🔵", "price": 29000},
         {"name": "🔥🇷🇺🇪🇺 Xiaomi Mi Pad 8 Pro 8/256GB ⚫️🔵🟢", "price": 41000},
-    ]},
+   ]},
+   "poco": {"name": "🔥 POCO", "items": [
+        {"name": "🇷🇺 POCO C85 6/128GB ⚫️🟢🟣", "price": 7700},
+        {"name": "🇷🇺 POCO C85 8/256GB ⚫️🟢", "price": 8700},
+        {"name": "🇷🇺🇪🇺 POCO M8 Pro 12/512GB ⚪️🟢", "price": 24000},
+        {"name": "🇷🇺🇪🇺 POCO X7 12/512GB 🟢⚪️", "price": 21200},
+        {"name": "🇪🇺 POCO X7 Pro 12/512GB ⚫️🟡🟢", "price": 26000},
+        {"name": "🆕🇷🇺🇪🇺 POCO X8 Pro 8/512GB ⚪️🟢", "price": 25500},
+        {"name": "🆕🇷🇺 POCO X8 Pro 12/512GB ⚫️🟢⚪️", "price": 27800},
+        {"name": "🆕🇷🇺 POCO X8 Pro Max 12/256GB ⚫️🔵", "price": 32000},
+        {"name": "🆕🇷🇺 POCO X8 Pro Max 12/512GB 🔵", "price": 34500},
+        {"name": "🇷🇺 POCO F6 Pro 12/512GB ⚫️", "price": 26000},
+        {"name": "🇷🇺 POCO F6 Pro 16/1TB ⚫️", "price": 30500},
+        {"name": "🇪🇺 POCO F8 Pro 12/256GB ⚫️", "price": 37500},
+        {"name": "🇪🇺 POCO F8 Pro 12/512GB 🔵⚪️", "price": 40000},
+        {"nameНо": "🇪🇺 POCO F8 Ultra 12/256GB ⚫️", "price": 50000},
+        {"name": "🔥🇪🇺 POCO Pad M1 8/256GB ⚫️", "price": 18000},
+    ]},    
     "honor": {"name": "🏅 Honor / Huawei", "items": [
         {"name": "🔥🇪🇺 HONOR 400 Smart 8/256GB ⚫️", "price": 14500},
         {"name": "🔥🇪🇺 HONOR 400 8/512GB ⚫️🟡", "price": 27500},
@@ -535,7 +535,9 @@ def detect_category(line: str):
         return 'watch'
     if any(x in line for x in ['Samsung', 'A07', 'A26', 'A36', 'A37', 'A56', 'A57', 'S25', 'S26', 'Z Flip', 'Z Fold', 'Galaxy', 'Tab S']):
         return 'samsung'
-    if any(x in line for x in ['POCO', 'Xiaomi', 'Redmi', 'Mi Pad', 'Mi 15', 'Mi 17', 'Note 14', 'Note 15', 'Note 14S', 'Xiaomi A5', 'Xiaomi 15C', ' 15C ', ' A5 ']):
+    if 'POCO' in line:
+        return 'poco'
+    if any(x in line for x in ['Xiaomi', 'Redmi', 'Mi Pad', 'Mi 15', 'Mi 17', 'Note 14', 'Note 15']):
         return 'xiaomi'
     if 'Pixel' in line:
         return 'pixel'
