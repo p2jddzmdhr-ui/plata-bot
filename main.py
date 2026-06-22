@@ -453,7 +453,7 @@ def parse_price_line(line: str):
     return name, price
 
 def detect_category(line: str):
-    if any(x in line for x in ['iPhone', 'iphone']):
+    if any(x in line for x in ['iPhone', 'iphone', '🍎']):
         return 'iphone'
     if any(x in line for x in ['iPad', 'ipad']):
         return 'ipad'
