@@ -546,7 +546,7 @@ def detect_category(line: str):
         return 'oneplus'
     if 'Realme' in line:
         return 'realme'
-    if any(x in line for x in ['Dyson', 'Dreame AirStyle', 'Dreame Aero']):
+    if any(x in line for x in ['Dyson', 'Dreame AirStyle', 'Dreame Aero', 'HT01', 'HD18', 'HS08', 'HS09']):
         return 'dyson'
     if any(x in line for x in ['Roborock', 'Dreame X', 'Dreame L', 'Dreame H', 'Dreame R', 'Dreame V', 'Dreame G', 'Vacuum']):
         return 'vacuum'
