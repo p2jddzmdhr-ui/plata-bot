@@ -564,7 +564,7 @@ def detect_category(line: str):
 def main_keyboard():
     return InlineKeyboardMarkup([
         [InlineKeyboardButton("📦 Каталог", callback_data="catalog")],
-        [InlineKeyboardButton("💬 Менеджер", url=f"https://t.me/{MANAGER}")],
+        https://t.me/{MANAGER}?text=Здравствуйте!%0A%0AХочу%20заказать%3A%0A%0AМодель%3A%20%0AЦвет%3A%20%0AПамять%3A%20%0AФлаг%3A%20
         [InlineKeyboardButton("ℹ️ О нас", callback_data="about")],
     ])
 
@@ -601,7 +601,7 @@ async def category_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if len(text) > 4000:
         text = text[:4000] + "\n\n_...уточняйте у менеджера!_"
     kb = InlineKeyboardMarkup([
-        [InlineKeyboardButton("🛒 Заказать", url=f"https://t.me/{MANAGER}")],
+        [InlineKeyboardButton("🛒 Заказать", url=f"https://t.me/{MANAGER}?text=Здравствуйте!%0A%0AХочу%20заказать%3A%0A%0AМодель%3A%20%0AЦвет%3A%20%0AПамять%3A%20%0AФлаг%3A%20")],
         [InlineKeyboardButton("◀️ Назад", callback_data="catalog")],
     ])
     await q.edit_message_text(text, reply_markup=kb, parse_mode="Markdown")
@@ -611,7 +611,7 @@ async def about_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await q.answer()
     text = "🏪 *Plata — оригинальная техника*\n\nМы помогаем выбрать и купить технику, которой можно доверять. Только оригинальные устройства, честные цены и живая консультация.\n\n✅ Гарантия на все товары\n🚚 Доставка по всей России\n\n📍 Москва, Пятницкое шоссе д.18\nТК Митинский Радиорынок\n0 вход, 1 этаж, павильон 450\n\n🕗 Режим работы: 8:00 — 20:00\n\n💬 Менеджер: @aikhang"
     kb = InlineKeyboardMarkup([
-        [InlineKeyboardButton("💬 Менеджер", url=f"https://t.me/{MANAGER}")],
+        [InlineKeyboardButton("💬 Менеджер", url=f"https://t.me/{MANAGER}?text=Здравствуйте!%0A%0AХочу%20заказать%3A%0A%0AМодель%3A%20%0AЦвет%3A%20%0AПамять%3A%20%0AФлаг%3A%20")],
         [InlineKeyboardButton("🏠 Главная", callback_data="home")],
     ])
     await q.edit_message_text(text, reply_markup=kb, parse_mode="Markdown")
