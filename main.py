@@ -535,7 +535,7 @@ def detect_category(line: str):
         return 'watch'
     if any(x in line for x in ['Samsung', 'A07', 'A26', 'A36', 'A37', 'A56', 'A57', 'S25', 'S26', 'Z Flip', 'Z Fold', 'Galaxy', 'Tab S']):
         return 'samsung'
-    if any(x in line for x in ['POCO', 'Xiaomi', 'Redmi', 'Mi Pad', 'Mi 15', 'Mi 17', 'Note 14', 'Note 15']):
+    if any(x in line for x in ['POCO', 'Xiaomi', 'Redmi', 'Mi Pad', 'Mi 15', 'Mi 17', 'Note 14', 'Note 15', 'Note 14S', 'Xiaomi A5', 'Xiaomi 15C', ' 15C ', ' A5 ']):
         return 'xiaomi'
     if 'Pixel' in line:
         return 'pixel'
