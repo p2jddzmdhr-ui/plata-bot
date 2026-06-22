@@ -6,6 +6,7 @@ from telegram.ext import Application, CommandHandler, CallbackQueryHandler, Mess
 
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
 MANAGER = "aikhang"
+ORDER_URL = "https://t.me/aikhang?text=%D0%97%D0%B4%D1%80%D0%B0%D0%B2%D1%81%D1%82%D0%B2%D1%83%D0%B9%D1%82%D0%B5!%0A%0A%D0%A5%D0%BE%D1%87%D1%83%20%D0%B7%D0%B0%D0%BA%D0%B0%D0%B7%D0%B0%D1%82%D1%8C%3A%0A%0A%D0%9C%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C%3A%20%0A%D0%A6%D0%B2%D0%B5%D1%82%3A%20%0A%D0%9F%D0%B0%D0%BC%D1%8F%D1%82%D1%8C%3A%20%0A%D0%A4%D0%BB%D0%B0%D0%B3%3A%20"
 OWNER_ID = 294265601
 MARKUP = {
     "iphone": 0.10,
@@ -564,7 +565,7 @@ def detect_category(line: str):
 def main_keyboard():
     return InlineKeyboardMarkup([
         [InlineKeyboardButton("📦 Каталог", callback_data="catalog")],
-        [InlineKeyboardButton("💬 Менеджер", url=f"https://t.me/{MANAGER}?text=%D0%97%D0%B4%D1%80%D0%B0%D0%B2%D1%81%D1%82%D0%B2%D1%83%D0%B9%D1%82%D0%B5!%0A%0A%D0%A5%D0%BE%D1%87%D1%83%20%D0%B7%D0%B0%D0%BA%D0%B0%D0%B7%D0%B0%D1%82%D1%8C%3A%0A%0A%D0%9C%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C%3A%20%0A%D0%A6%D0%B2%D0%B5%D1%82%3A%20%0A%D0%9F%D0%B0%D0%BC%D1%8F%D1%82%D1%8C%3A%20%0A%D0%A4%D0%BB%D0%B0%D0%B3%3A%20")],
+        [InlineKeyboardButton("💬 Менеджер", url=ORDER_URL)],
         [InlineKeyboardButton("ℹ️ О нас", callback_data="about")],
     ])
 def catalog_keyboard():
@@ -600,7 +601,7 @@ async def category_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if len(text) > 4000:
         text = text[:4000] + "\n\n_...уточняйте у менеджера!_"
     kb = InlineKeyboardMarkup([
-        [InlineKeyboardButton("🛒 Заказать", url=f"https://t.me/{MANAGER}?text=%D0%97%D0%B4%D1%80%D0%B0%D0%B2%D1%81%D1%82%D0%B2%D1%83%D0%B9%D1%82%D0%B5!%0A%0A%D0%A5%D0%BE%D1%87%D1%83%20%D0%B7%D0%B0%D0%BA%D0%B0%D0%B7%D0%B0%D1%82%D1%8C%3A%0A%0A%D0%9C%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C%3A%20%0A%D0%A6%D0%B2%D0%B5%D1%82%3A%20%0A%D0%9F%D0%B0%D0%BC%D1%8F%D1%82%D1%8C%3A%20%0A%D0%A4%D0%BB%D0%B0%D0%B3%3A%20"]),
+        [InlineKeyboardButton("🛒 Заказать", url=ORDER_URL)],
         [InlineKeyboardButton("◀️ Назад", callback_data="catalog")],
     ])
     await q.edit_message_text(text, reply_markup=kb, parse_mode="Markdown")
@@ -610,8 +611,7 @@ async def about_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await q.answer()
     text = "🏪 *Plata — оригинальная техника*\n\nМы помогаем выбрать и купить технику, которой можно доверять. Только оригинальные устройства, честные цены и живая консультация.\n\n✅ Гарантия на все товары\n🚚 Доставка по всей России\n\n📍 Москва, Пятницкое шоссе д.18\nТК Митинский Радиорынок\n0 вход, 1 этаж, павильон 450\n\n🕗 Режим работы: 8:00 — 20:00\n\n💬 Менеджер: @aikhang"
     kb = InlineKeyboardMarkup([
-        [InlineKeyboardButton("💬 Менеджер", url=f"https://t.me/{MANAGER}?text=%D0%97%D0%B4%D1%80%D0%B0%D0%B2%D1%81%D1%82%D0%B2%D1%83%D0%B9%D1%82%D0%B5!%0A%0A%D0%A5%D0%BE%D1%87%D1%83%20%D0%B7%D0%B0%D0%BA%D0%B0%D0%B7%D0%B0%D1%82%D1%8C%3A%0A%0A%D0%9C%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C%3A%20%0A%D0%A6%D0%B2%D0%B5%D1%82%3A%20%0A%D0%9F%D0%B0%D0%BC%D1%8F%D1%82%D1%8C%3A%20%0A%D0%A4%D0%BB%D0%B0%D0%B3%3A%20"
-        [InlineKeyboardButton("🏠 Главная", callback_data="home")],
+        [InlineKeyboardButton("💬 Менеджер", url=ORDER_URL)],
     ])
     await q.edit_message_text(text, reply_markup=kb, parse_mode="Markdown")
 
