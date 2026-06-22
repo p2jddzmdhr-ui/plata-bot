@@ -455,6 +455,8 @@ def parse_price_line(line: str):
     return name, price
 
 def detect_category(line: str):
+    if any(x in line for x in ['Watch Fit', 'Watch 7', 'Watch 8', 'Buds Core', 'Buds 3', 'Buds 4']):
+        return 'samsung_watch'
     if any(x in line for x in ['iPhone', 'iphone', '🍎']):
         if not any(x in line for x in ['iPad', 'ipad']):
             return 'iphone'
@@ -466,10 +468,8 @@ def detect_category(line: str):
         return 'airpods'
     if any(x in line for x in ['Watch SE', 'Watch S1', 'Watch Ultra', 'Watch S10', 'Watch S11']):
         return 'watch'
-    if any(x in line for x in ['Samsung', 'A07', 'A26', 'A36', 'A37', 'A56', 'A57', 'S25', 'S26', 'S26+', 'Z Flip', 'Z Fold', 'Galaxy', 'Tab S', 'Watch Fit', 'Watch 7', 'Watch 8']):
+    if any(x in line for x in ['Samsung', 'A07', 'A26', 'A36', 'A37', 'A56', 'A57', 'S25', 'S26', 'Z Flip', 'Z Fold', 'Galaxy', 'Tab S']):
         return 'samsung'
-    if any(x in line for x in ['Watch Fit', 'Watch 7', 'Watch 8', 'Buds']):  
-        return 'samsung_watch'
     if any(x in line for x in ['POCO', 'Xiaomi', 'Redmi', 'Mi Pad', 'Mi 15', 'Mi 17', 'Note 15']):
         return 'xiaomi'
     if any(x in line for x in ['HONOR', 'Huawei']):
