@@ -616,17 +616,31 @@ async def about_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton("🏠 Главная", callback_data="home")],
     ])
     await q.edit_message_text(text, reply_markup=kb, parse_mode="Markdown")
-
+price_buffer = {}
 async def handle_price_update(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.message.from_user.id
     if user_id != OWNER_ID:
         return
     text = update.message.text or update.message.caption or ""
-    if len(text) < 100:
-        await update.message.reply_text("⚠️ Текст слишком короткий, это не прайс")
+    
+    if text.strip() == '/done':
+        if not price_buffer:
+            await update.message.reply_text("⚠️ Буфер пустой — сначала скинь прайс")
+            return
+        updated = []
+        for category, items in price_buffer.items():
+            if items and category in CATALOG:
+                CATALOG[category]["items"] = items
+                updated.append(f"{CATALOG[category]['name']} — {len(items)} позиций")
+        price_buffer.clear()
+        report = "\n".join(updated)
+        await update.message.reply_text(f"✅ *Цены обновлены!*\n\n{report}", parse_mode="Markdown")
         return
-    await update.message.reply_text("⏳ Обновляю цены...")
-    result = {}
+
+    if len(text) < 50:
+        return
+
+    count = 0
     for line in text.split('\n'):
         parsed = parse_price_line(line)
         if not parsed:
@@ -634,22 +648,13 @@ async def handle_price_update(update: Update, context: ContextTypes.DEFAULT_TYPE
         name, price = parsed
         category = detect_category(line)
         if category:
-            if category not in result:
-                result[category] = []
-            result[category].append({"name": name, "price": price})
-    if not result:
-        await update.message.reply_text("❌ Не удалось распарсить прайс")
-        return
-    updated = []
-    for category, items in result.items():
-        if items and category in CATALOG:
-            CATALOG[category]["items"] = items
-            updated.append(f"{CATALOG[category]['name']} — {len(items)} позиций")
-    if updated:
-        report = "\n".join(updated)
-        await update.message.reply_text(f"✅ *Цены обновлены!*\n\n{report}", parse_mode="Markdown")
-    else:
-        await update.message.reply_text("⚠️ Категории не распознаны")
+            if category not in price_buffer:
+                price_buffer[category] = []
+            price_buffer[category].append({"name": name, "price": price})
+            count += 1
+
+    if count > 0:
+        await update.message.reply_text(f"➕ Добавлено {count} позиций в буфер. Скидывай следующую часть или напиши /done чтобы сохранить.")
 
 async def router(update: Update, context: ContextTypes.DEFAULT_TYPE):
     d = update.callback_query.data
