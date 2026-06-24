@@ -502,7 +502,7 @@ def parse_price_line(line: str):
     line = line.strip()
     if not line:
         return None
-    price_match = re.search(r'-(\d{4,6})\s*$', line)
+    price_match = price_match = re.search(r'-(\d{4,6})', line)
     if not price_match:
         return None
     price = int(price_match.group(1))
