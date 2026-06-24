@@ -30,7 +30,7 @@ MARKUP = {
     "gaming": 0.15,
     "speakers": 0.20,
     "rugged": 0.20,
-    "accessories": 0.25,
+    "accessories": 1.00,
 }
 
 CATALOG = {
