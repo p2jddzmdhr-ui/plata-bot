@@ -758,9 +758,17 @@ async def handle_price_update(update: Update, context: ContextTypes.DEFAULT_TYPE
             return
         updated = []
         for category, items in price_buffer.items():
-            if items and category in CATALOG:
-               CATALOG[category]["items"] = items
-               updated.append(f"{CATALOG[category]['name']} — {len(items)} позиций")
+                    if items and category in CATALOG:
+                        for new_item in items:
+                            for old_item in CATALOG[category]["items"]:
+                                if old_item["price"] != 0:
+                                    new_words = set(new_item["name"].lower().split())
+                                    old_words = set(old_item["name"].lower().split())
+                                    common = new_words & old_words
+                                    if len(common) >= 3:
+                                        old_item["price"] = new_item["price"]
+                                        break
+                     updated.append(f"{CATALOG[category]['name']} — {len(items)} позиций")
         price_buffer.clear()
         report = "\n".join(updated)
         await update.message.reply_text(f"✅ *Цены обновлены!*\n\n{report}", parse_mode="Markdown")
