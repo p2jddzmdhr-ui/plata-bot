@@ -768,7 +768,7 @@ async def handle_price_update(update: Update, context: ContextTypes.DEFAULT_TYPE
                                     if len(common) >= 3:
                                         old_item["price"] = new_item["price"]
                                         break
-                     updated.append(f"{CATALOG[category]['name']} — {len(items)} позиций")
+                        updated.append(f"{CATALOG[category]['name']} — {len(items)} позиций")
         price_buffer.clear()
         report = "\n".join(updated)
         await update.message.reply_text(f"✅ *Цены обновлены!*\n\n{report}", parse_mode="Markdown")
