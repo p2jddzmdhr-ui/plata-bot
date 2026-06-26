@@ -572,8 +572,23 @@ def main_keyboard():
         [InlineKeyboardButton("ℹ️ О нас", callback_data="about")],
     ])
 def catalog_keyboard():
-    kb = [[InlineKeyboardButton(cat["name"], callback_data=f"cat_{key}")] for key, cat in CATALOG.items()]
-    kb.append([InlineKeyboardButton("🏠 Главная", callback_data="home")])
+    kb = [
+        [InlineKeyboardButton("💻 MacBook", callback_data="cat_macbook"), InlineKeyboardButton("📟 iPad", callback_data="cat_ipad")],
+        [InlineKeyboardButton("⌚️ Apple Watch", callback_data="cat_watch"), InlineKeyboardButton("🎧 AirPods", callback_data="cat_airpods")],
+        [InlineKeyboardButton("⌚️ Samsung Watch", callback_data="cat_samsung_watch"), InlineKeyboardButton("📸 Pixel", callback_data="cat_pixel")],
+        [InlineKeyboardButton("🟢 OnePlus", callback_data="cat_oneplus"), InlineKeyboardButton("🍋 Realme", callback_data="cat_realme")],
+        [InlineKeyboardButton("🍎 iPhone", callback_data="cat_iphone")],
+        [InlineKeyboardButton("📱 Samsung", callback_data="cat_samsung")],
+        [InlineKeyboardButton("🔥 Xiaomi", callback_data="cat_xiaomi")],
+        [InlineKeyboardButton("🔥 POCO", callback_data="cat_poco")],
+        [InlineKeyboardButton("🏅 Honor / Huawei", callback_data="cat_honor")],
+        [InlineKeyboardButton("♥️ Dyson & Dreame", callback_data="cat_dyson"), InlineKeyboardButton("🏠 Пылесосы", callback_data="cat_vacuum")],
+        [InlineKeyboardButton("💻 Ноутбуки", callback_data="cat_laptops"), InlineKeyboardButton("📹 Камеры", callback_data="cat_cameras")],
+        [InlineKeyboardButton("⌚️ Garmin", callback_data="cat_garmin"), InlineKeyboardButton("🎮 PS5", callback_data="cat_gaming")],
+        [InlineKeyboardButton("🎼 Колонки", callback_data="cat_speakers"), InlineKeyboardButton("💦 Защищённые", callback_data="cat_rugged")],
+        [InlineKeyboardButton("🔆 Аксессуары", callback_data="cat_accessories")],
+        [InlineKeyboardButton("🏠 Главная", callback_data="home")],
+    ]
     return InlineKeyboardMarkup(kb)
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -612,7 +627,7 @@ async def category_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def about_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
-    text = "🏪 *Plata — оригинальная техника*\n\nМы помогаем выбрать и купить технику, которой можно доверять. Только оригинальные устройства, честные цены и живая консультация.\n\n✅ Гарантия на все товары\n🚚 Доставка по всей России\n\n📍 Москва, Пятницкое шоссе д.18\nТК Митинский Радиорынок\n0 вход, 1 этаж, павильон 450\n\n🕗 Режим работы: 8:00 — 20:00\n\n🆘 помощь: @plata\\_mgr"
+    text = "🏪 *Plata — оригинальная техника*\n\nМы помогаем выбрать и купить технику, которой можно доверять. Только оригинальные устройства, честные цены и живая консультация.\n\n✅ Гарантия на все товары\n🚚 Доставка по всей России\n\n📍 Москва, Пятницкое шоссе д.18\nТК Митинский Радиорынок\n0 вход, 1 этаж, павильон 450\n\n🕗 Самовывоз: 9:00 — 18:00\n✍️ Заказы: 9:00 — 20:00\n⏰ Без выходных\n\n🆘 помощь: @plata\\_mgr"
     kb = InlineKeyboardMarkup([
         [InlineKeyboardButton("💬 Менеджер", url=ORDER_URL)],
         [InlineKeyboardButton("🏠 Главная", callback_data="home")],
