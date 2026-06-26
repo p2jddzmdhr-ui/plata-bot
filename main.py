@@ -759,30 +759,8 @@ async def handle_price_update(update: Update, context: ContextTypes.DEFAULT_TYPE
         updated = []
         for category, items in price_buffer.items():
             if items and category in CATALOG:
-                old_items = CATALOG[category]["items"]
-                new_prices = {item["name"]: item["price"] for item in items}
-                new_names = {item["name"] for item in items}
-                
-                # Оставляем разделители и товары которые есть в новом прайсе
-                updated_items = []
-                for item in old_items:
-                    if item["price"] == 0:
-                        # Это разделитель — оставляем
-                        updated_items.append(item)
-                    elif item["name"] in new_prices:
-                        # Товар есть в прайсе — обновляем цену
-                        item["price"] = new_prices[item["name"]]
-                        updated_items.append(item)
-                    # Если товара нет в прайсе — не добавляем (удаляем)
-                
-                # Добавляем новые товары которых не было в каталоге
-                old_names = {item["name"] for item in old_items if item["price"] != 0}
-                for item in items:
-                    if item["name"] not in old_names:
-                        updated_items.append(item)
-                
-                CATALOG[category]["items"] = updated_items
-                updated.append(f"{CATALOG[category]['name']} — {len(items)} позиций")
+               CATALOG[category]["items"] = items
+               updated.append(f"{CATALOG[category]['name']} — {len(items)} позиций")
         price_buffer.clear()
         report = "\n".join(updated)
         await update.message.reply_text(f"✅ *Цены обновлены!*\n\n{report}", parse_mode="Markdown")
