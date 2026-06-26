@@ -759,7 +759,11 @@ async def handle_price_update(update: Update, context: ContextTypes.DEFAULT_TYPE
         updated = []
         for category, items in price_buffer.items():
             if items and category in CATALOG:
-                CATALOG[category]["items"] = items
+                old_items = CATALOG[category]["items"]
+                new_prices = {item["name"]: item["price"] for item in items}
+                for item in old_items:
+                    if item["name"] in new_prices:
+                        item["price"] = new_prices[item["name"]]
                 updated.append(f"{CATALOG[category]['name']} — {len(items)} позиций")
         price_buffer.clear()
         report = "\n".join(updated)
