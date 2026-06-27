@@ -797,8 +797,132 @@ async def handle_price_update(update: Update, context: ContextTypes.DEFAULT_TYPE
                                     best_sep_idx = i
                                 elif any(x in name_lower for x in ["tab"]) and "tab" in sep:
                                     best_sep_idx = i
+                            elif category == "macbook":
+                                if any(x in name_lower for x in ["mac mini","macmini","mu9d3","mu9e3","mcyt4"]) and "mac mini" in sep:
+                                    best_sep_idx = i
+                                elif "neo" in name_lower and "neo" in sep:
+                                    best_sep_idx = i
+                                elif "air 13" in name_lower and "air 13" in sep:
+                                    best_sep_idx = i
+                                elif "air 15" in name_lower and "air 15" in sep:
+                                    best_sep_idx = i
+                                elif "pro" in name_lower and "pro" in sep:
+                                    best_sep_idx = i
+                                else:
+                                    best_sep_idx = i
+                            elif category == "watch":
+                                if "se" in name_lower and "se" in sep:
+                                    best_sep_idx = i
+                                elif any(x in name_lower for x in ["s10","s11"]) and "s10" in sep:
+                                    best_sep_idx = i
+                                elif "ultra 3" in name_lower and "ultra 3" in sep:
+                                    best_sep_idx = i
+                                elif "ultra" in name_lower and "ultra 2" in sep:
+                                    best_sep_idx = i
+                                else:
+                                    best_sep_idx = i
+                            elif category == "samsung_watch":
+                                if any(x in name_lower for x in ["watch fit","watch 7","watch 8","ultra"]) and "watch" in sep:
+                                    best_sep_idx = i
+                                elif "buds" in name_lower and "buds" in sep:
+                                    best_sep_idx = i
+                                else:
+                                    best_sep_idx = i
+                            elif category == "ipad":
+                                if "air" in name_lower and "air" in sep:
+                                    best_sep_idx = i
+                                elif "pro 11" in name_lower and "pro 11" in sep:
+                                    best_sep_idx = i
+                                elif "pro 13" in name_lower and "pro 13" in sep:
+                                    best_sep_idx = i
+                                elif any(x in name_lower for x in ["pencil","keyboard"]) and "аксессуары" in sep:
+                                    best_sep_idx = i
+                                else:
+                                    best_sep_idx = i
+                            elif category == "airpods":
+                                if "earpods" in name_lower and "earpods" in sep:
+                                    best_sep_idx = i
+                                elif "pro" in name_lower and "pro" in sep:
+                                    best_sep_idx = i
+                                elif "max" in name_lower and "max" in sep:
+                                    best_sep_idx = i
+                                else:
+                                    best_sep_idx = i
+                            elif category == "xiaomi":
+                                if "note 14" in name_lower and "note 14" in sep:
+                                    best_sep_idx = i
+                                elif "note 15" in name_lower and "note 15" in sep:
+                                    best_sep_idx = i
+                                elif any(x in name_lower for x in ["15t","mi 15t","mi 15"]) and "mi 15" in sep:
+                                    best_sep_idx = i
+                                elif any(x in name_lower for x in ["17t","mi 17t","mi 17"]) and "mi 17" in sep:
+                                    best_sep_idx = i
+                                elif any(x in name_lower for x in ["pad","mi pad"]) and "планшет" in sep:
+                                    best_sep_idx = i
+                                else:
+                                    best_sep_idx = i
+                            elif category == "poco":
+                                if any(x in name_lower for x in ["c85","c100"]) and " c " in sep:
+                                    best_sep_idx = i
+                                elif any(x in name_lower for x in ["m8","m8 pro"]) and " m " in sep:
+                                    best_sep_idx = i
+                                elif any(x in name_lower for x in ["x7","x8"]) and " x " in sep:
+                                    best_sep_idx = i
+                                elif any(x in name_lower for x in ["f6","f8"]) and " f " in sep:
+                                    best_sep_idx = i
+                                elif "pad" in name_lower and "планшет" in sep:
+                                    best_sep_idx = i
+                                else:
+                                    best_sep_idx = i
+                            elif category == "honor":
+                                if "magic" in name_lower and "magic" in sep:
+                                    best_sep_idx = i
+                                elif "huawei" in name_lower and "huawei" in sep:
+                                    best_sep_idx = i
+                                elif any(x in name_lower for x in ["pad x","magic pad"]) and "honor планшет" in sep:
+                                    best_sep_idx = i
+                                elif any(x in name_lower for x in ["mate pad","matepad"]) and "huawei планшет" in sep:
+                                    best_sep_idx = i
+                                elif any(x in name_lower for x in ["watch","band"]) and "watch" in sep:
+                                    best_sep_idx = i
+                                else:
+                                    best_sep_idx = i
+                            elif category == "dyson":
+                                if any(x in name_lower for x in ["ht01","hd18","фен"]) and "фен" in sep:
+                                    best_sep_idx = i
+                                elif any(x in name_lower for x in ["hs08","hs09","стайлер","airstyle","aero"]) and "стайлер" in sep:
+                                    best_sep_idx = i
+                                elif any(x in name_lower for x in ["v12","v15","v16","pencil wash","пылесос"]) and "пылесос" in sep:
+                                    best_sep_idx = i
+                                elif any(x in name_lower for x in ["sp01","ph05","очист"]) and "очист" in sep:
+                                    best_sep_idx = i
+                                elif any(x in name_lower for x in ["dreame","g10","h12","h14","h15","r20"]) and "dreame пылесос" in sep:
+                                    best_sep_idx = i
+                                elif any(x in name_lower for x in ["робот","f10","l40","x50","x60"]) and "робот" in sep:
+                                    best_sep_idx = i
+                                else:
+                                    best_sep_idx = i
+                            elif category == "vacuum":
+                                if any(x in name_lower for x in ["red solution","flexi","f25","вертикальн"]) and "вертикальн" in sep:
+                                    best_sep_idx = i
+                                elif any(x in name_lower for x in ["q8","q10"]) and "q серия" in sep:
+                                    best_sep_idx = i
+                                elif any(x in name_lower for x in ["s8","s9"]) and "s серия" in sep:
+                                    best_sep_idx = i
+                                elif any(x in name_lower for x in ["revo","qv","saros"]) and "revo" in sep:
+                                    best_sep_idx = i
+                                else:
+                                    best_sep_idx = i
+                            elif category == "laptops":
+                                if any(x in name_lower for x in ["ally","xbox"]) and "консол" in sep:
+                                    best_sep_idx = i
+                                elif any(x in name_lower for x in ["nitro","tuf","rog","legion","katana","vector","titan","gigabyte","raider","thunderobot"]) and "игров" in sep:
+                                    best_sep_idx = i
+                                else:
+                                    best_sep_idx = i
                             else:
-                                    break
+                                best_sep_idx = i
+                                break
 
                     if best_sep_idx is None and category not in ["iphone", "samsung"]:
                         cat_items.append({"name": new_name, "price": base_price})
