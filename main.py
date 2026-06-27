@@ -633,13 +633,15 @@ def detect_category(line: str):
         return 'samsung_watch'
     if 'Watch 7' in line and 'Huawei' not in line and 'Pixel' not in line:
         return 'samsung_watch'
+    if any(x in line for x in ['MacBook', 'Mac Mini', 'MacMini', 'MU9D3', 'MU9E3', 'MCYT4', 'MHFF4', 'MC6A4', 'MDHF4', 'MDVH4', 'MJLW4', 'MGDT4', 'MGDU4', 'MGED4']):
+        return 'macbook'
     if any(x in line for x in ['iPhone', 'iphone', '🍎']):
+        if not any(x in line for x in ['iPad', 'ipad']):
+            return 'iphone'    if any(x in line for x in ['iPhone', 'iphone', '🍎']):
         if not any(x in line for x in ['iPad', 'ipad']):
             return 'iphone'
     if any(x in line for x in ['iPad', 'ipad']):
         return 'ipad'
-    if any(x in line for x in ['MacBook', 'Mac Mini', 'MacMini']):
-        return 'macbook'
     if 'AirPods' in line:
         return 'airpods'
     if any(x in line for x in ['Watch SE', 'Watch S1', 'Watch Ultra', 'Watch S10', 'Watch S11']):
