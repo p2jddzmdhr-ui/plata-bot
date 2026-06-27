@@ -767,8 +767,9 @@ async def handle_price_update(update: Update, context: ContextTypes.DEFAULT_TYPE
                                 new_words = set(new_item["name"].lower().split())
                                 old_words = set(old_item["name"].lower().split())
                                 common = new_words & old_words
-                                if len(common) >= 3:
-                                    old_item["price"] = new_item["price"]
+                                if len(common) >= 2:
+                                    markup = MARKUP.get(category, 0.10)
+                                    old_item["price"] = round(new_item["price"] / (1 + markup) / 100) * 100
                                     matched_old_names.add(old_item["name"])
                                     break
                     CATALOG[category]["items"] = [
