@@ -780,7 +780,8 @@ if text.strip() == '/done':
         report = "\n".join(updated)
         await update.message.reply_text(f"✅ *Цены обновлены!*\n\n{report}", parse_mode="Markdown")
         return
-   if len(text) < 50:
+   
+    if len(text) < 50:
         return
 
     count = 0
