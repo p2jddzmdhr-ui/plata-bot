@@ -770,10 +770,46 @@ async def handle_price_update(update: Update, context: ContextTypes.DEFAULT_TYPE
                 markup = MARKUP.get(category, 0.10)
                 for new_item in items:
                     base_price = round(new_item["price"] / (1 + markup) / 100) * 100
-                    CATALOG[category]["items"].append({
-                        "name": new_item["name"],
-                        "price": base_price
-                    })
+                    new_name = new_item["name"]
+                    cat_items = CATALOG[category]["items"]
+                    
+                    # Найти подходящий разделитель
+                    best_sep_idx = None
+                    for i, item in enumerate(cat_items):
+                        if item["price"] == 0:
+                            sep = item["name"].lower()
+                            name_lower = new_name.lower()
+                            if category == "iphone":
+                                for num in ["17 pro max", "17 pro", "17 air", "17e", "17", "16 pro max", "16 pro", "16e", "16 plus", "16", "15 pro max", "15 pro", "15 plus", "15", "14 pro max", "14 pro", "14 plus", "14", "13 pro max", "13 pro", "13 mini", "13"]:
+                                    if num in name_lower and num.split()[0] in sep:
+                                        best_sep_idx = i
+                                        break
+                            elif category == "samsung":
+                                if any(x in name_lower for x in ["a07","a17","a26","a36","a37","a56","a57"]) and "a серия" in sep:
+                                    best_sep_idx = i
+                                elif any(x in name_lower for x in ["s25"]) and "s25" in sep:
+                                    best_sep_idx = i
+                                elif any(x in name_lower for x in ["s26"]) and "s26" in sep:
+                                    best_sep_idx = i
+                                elif any(x in name_lower for x in ["z flip"]) and "flip" in sep:
+                                    best_sep_idx = i
+                                elif any(x in name_lower for x in ["z fold"]) and "fold" in sep:
+                                    best_sep_idx = i
+                                elif any(x in name_lower for x in ["tab"]) and "tab" in sep:
+                                    best_sep_idx = i
+                            else:
+                                best_sep_idx = i
+                    
+                    # Вставить после разделителя
+                    if best_sep_idx is not None:
+                        # Найти позицию после разделителя (перед следующим разделителем)
+                        insert_idx = best_sep_idx + 1
+                        while insert_idx < len(cat_items) and cat_items[insert_idx]["price"] != 0:
+                            insert_idx += 1
+                        cat_items.insert(insert_idx, {"name": new_name, "price": base_price})
+                    else:
+                        cat_items.append({"name": new_name, "price": base_price})
+                
                 updated.append(f"{CATALOG[category]['name']} — {len(items)} позиций")
 
         price_buffer.clear()
