@@ -779,7 +779,7 @@ async def handle_price_update(update: Update, context: ContextTypes.DEFAULT_TYPE
                     best_sep_idx = None
                     name_lower = new_name.lower()
                     sep_keywords = {
-                        "macbook": [("mac mini", ["mac mini","macmini","mu9d3","mu9e3","mcyt4"]), ("neo", ["neo 2026","mhff4","mhfg4","mhfa4","mhfd4","a18 pro"]), ("air 13", ["air 13"]), ("air 15", ["air 15"]), ("pro", ["pro 14","pro 16","mjlw4","mgdt4","mgdu4","mged4"])],
+                        "macbook": [("mac mini", ["mac mini","macmini","mu9d3","mu9e3","mcyt4"]), ("neo", ["neo 2026","mhff4","mhfg4","mhfa4","mhfd4","a18 pro"]), ("air 13", ["air 13"]), ("air 15", ["air 15"]), ("pro", ["pro 14","pro 16","mjlw4","mgdt4","mgdu4","mged4"]), ("аксессуары", ["magic mouse","mouse"])],
                         "watch": [("se", ["se 3","se 2","se 44","se 40"]), ("s10", ["s10","s11"]), ("ultra 3", ["ultra 3","black ocean","black ti black","black milanese"]), ("ultra 2", ["ultra 2","natural ti","black ti dark","milanese"])],
                         "samsung_watch": [("watch", ["watch fit","watch 7","watch 8","ultra"]), ("buds", ["buds"])],
                         "ipad": [("ipad 11", ["ipad 11"]), ("air", ["air"]), ("pro 11", ["pro 11"]), ("pro 13", ["pro 13"]), ("аксессуары", ["pencil","keyboard"])],
@@ -796,6 +796,7 @@ async def handle_price_update(update: Update, context: ContextTypes.DEFAULT_TYPE
                         "speakers": [("умные", ["sber","яндекс","vk","капсула"]), ("jbl", ["jbl"]), ("наушник", ["sennheiser","marshall","sony wh","tune"])],
                         "rugged": [("unihertz", ["unihertz","tank"]), ("blackview", ["bv bl","bv 6200","bl 9000"]), ("doogee", ["doogee"]), ("oukitel", ["oukitel","wp"]), ("ulefone", ["ulefone","armor"])],
                         "cameras": [("insta360", ["insta","360"]), ("dji", ["dji","osmo","mic"])],
+                        "accessories": [("чехлы", ["pitaka"]), ("apple аксессуары", ["battery pack","magsafe","apple adapter","сзу applewatch","сзу apple"]), ("сзу macbook", ["сзу macbook","67w","87w","96w","140w"]), ("samsung аксессуары", ["samsung сзу","samsung азу","азу samsung"]), ("другое", ["kindle"])],
                     }
                     if category == "iphone":
                         for i, item in enumerate(cat_items):
