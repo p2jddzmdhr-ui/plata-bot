@@ -810,6 +810,7 @@ async def handle_price_update(update: Update, context: ContextTypes.DEFAULT_TYPE
                                     best_sep_idx = i
                                 else:
                                     best_sep_idx = i
+                                break
                             elif category == "watch":
                                 if "se" in name_lower and "se" in sep:
                                     best_sep_idx = i
@@ -821,6 +822,7 @@ async def handle_price_update(update: Update, context: ContextTypes.DEFAULT_TYPE
                                     best_sep_idx = i
                                 else:
                                     best_sep_idx = i
+                                break
                             elif category == "samsung_watch":
                                 if any(x in name_lower for x in ["watch fit","watch 7","watch 8","ultra"]) and "watch" in sep:
                                     best_sep_idx = i
@@ -828,6 +830,7 @@ async def handle_price_update(update: Update, context: ContextTypes.DEFAULT_TYPE
                                     best_sep_idx = i
                                 else:
                                     best_sep_idx = i
+                                break
                             elif category == "ipad":
                                 if "air" in name_lower and "air" in sep:
                                     best_sep_idx = i
@@ -839,6 +842,7 @@ async def handle_price_update(update: Update, context: ContextTypes.DEFAULT_TYPE
                                     best_sep_idx = i
                                 else:
                                     best_sep_idx = i
+                                break
                             elif category == "airpods":
                                 if "earpods" in name_lower and "earpods" in sep:
                                     best_sep_idx = i
@@ -848,6 +852,7 @@ async def handle_price_update(update: Update, context: ContextTypes.DEFAULT_TYPE
                                     best_sep_idx = i
                                 else:
                                     best_sep_idx = i
+                                break
                             elif category == "xiaomi":
                                 if "note 14" in name_lower and "note 14" in sep:
                                     best_sep_idx = i
@@ -861,6 +866,7 @@ async def handle_price_update(update: Update, context: ContextTypes.DEFAULT_TYPE
                                     best_sep_idx = i
                                 else:
                                     best_sep_idx = i
+                                break
                             elif category == "poco":
                                 if any(x in name_lower for x in ["c85","c100"]) and " c " in sep:
                                     best_sep_idx = i
@@ -874,6 +880,7 @@ async def handle_price_update(update: Update, context: ContextTypes.DEFAULT_TYPE
                                     best_sep_idx = i
                                 else:
                                     best_sep_idx = i
+                                break
                             elif category == "honor":
                                 if "magic" in name_lower and "magic" in sep:
                                     best_sep_idx = i
@@ -887,6 +894,7 @@ async def handle_price_update(update: Update, context: ContextTypes.DEFAULT_TYPE
                                     best_sep_idx = i
                                 else:
                                     best_sep_idx = i
+                                break
                             elif category == "dyson":
                                 if any(x in name_lower for x in ["ht01","hd18","фен"]) and "фен" in sep:
                                     best_sep_idx = i
@@ -902,6 +910,7 @@ async def handle_price_update(update: Update, context: ContextTypes.DEFAULT_TYPE
                                     best_sep_idx = i
                                 else:
                                     best_sep_idx = i
+                                break
                             elif category == "vacuum":
                                 if any(x in name_lower for x in ["red solution","flexi","f25","вертикальн"]) and "вертикальн" in sep:
                                     best_sep_idx = i
@@ -913,6 +922,7 @@ async def handle_price_update(update: Update, context: ContextTypes.DEFAULT_TYPE
                                     best_sep_idx = i
                                 else:
                                     best_sep_idx = i
+                                break
                             elif category == "laptops":
                                 if any(x in name_lower for x in ["ally","xbox"]) and "консол" in sep:
                                     best_sep_idx = i
@@ -920,6 +930,7 @@ async def handle_price_update(update: Update, context: ContextTypes.DEFAULT_TYPE
                                     best_sep_idx = i
                                 else:
                                     best_sep_idx = i
+                                break
                             else:
                                 best_sep_idx = i
                                 break
