@@ -775,7 +775,7 @@ if text.strip() == '/done':
                     item for item in CATALOG[category]["items"]
                     if item["price"] == 0 or item["name"] in matched_old_names
                 ]
-                 updated.append(f"{CATALOG[category]['name']} — {len(items)} позиций")
+                updated.append(f"{CATALOG[category]['name']} — {len(items)} позиций")
         price_buffer.clear()
         report = "\n".join(updated)
         await update.message.reply_text(f"✅ *Цены обновлены!*\n\n{report}", parse_mode="Markdown")
