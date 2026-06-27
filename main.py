@@ -672,7 +672,7 @@ def detect_category(line: str):
         return 'speakers'
     if any(x in line for x in ['Unihertz', 'DOOGEE', 'Oukitel', 'Ulefone', 'BV BL', 'Tank 3']):
         return 'rugged'
-    if any(x in line for x in ['Battery Pack', 'MagSafe', 'Apple Adapter', 'СЗУ Apple', 'Pitaka', 'Kindle', 'СЗУ Samsung', 'АЗУ Samsung', 'СЗУ MacBook', '67W USB-C', '87W USB-C', '96W USB-C', '140W USB-C']):
+    if any(x in line for x in ['Battery Pack', 'MagSafe', 'Apple Adapter', 'СЗУ Apple', 'Pitaka', 'Kindle', 'СЗУ MacBook', '67W USB-C', '87W USB-C', '96W USB-C', '140W USB-C', '25W СЗУ', '45W СЗУ', '60W СЗУ', '65W СЗУ', 'АЗУ Samsung']):
         return 'accessories' 
         return None
     
@@ -796,7 +796,7 @@ async def handle_price_update(update: Update, context: ContextTypes.DEFAULT_TYPE
                         "speakers": [("умные", ["sber","яндекс","vk","капсула"]), ("jbl", ["jbl"]), ("наушник", ["sennheiser","marshall","sony wh","tune"])],
                         "rugged": [("unihertz", ["unihertz","tank"]), ("blackview", ["bv bl","bv 6200","bl 9000"]), ("doogee", ["doogee"]), ("oukitel", ["oukitel","wp"]), ("ulefone", ["ulefone","armor"])],
                         "cameras": [("insta360", ["insta","360"]), ("dji", ["dji","osmo","mic"])],
-                        "accessories": [("чехлы", ["pitaka"]), ("apple аксессуары", ["battery pack","magsafe","apple adapter","сзу applewatch","сзу apple"]), ("сзу macbook", ["сзу macbook","67w","87w","96w","140w"]), ("samsung аксессуары", ["samsung сзу","samsung азу","азу samsung"]), ("другое", ["kindle"])],
+                        "accessories": [("чехлы", ["pitaka"]), ("apple аксессуары", ["battery pack","magsafe","apple adapter","сзу applewatch","сзу apple"]), ("сзу macbook", ["сзу macbook","67w","87w","96w","140w"]), ("samsung аксессуары", ["25w сзу","45w сзу","60w сзу","65w сзу","азу samsung"]), ("другое", ["kindle"])],
                     }
                     if category == "iphone":
                         for i, item in enumerate(cat_items):
