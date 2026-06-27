@@ -776,10 +776,10 @@ async def handle_price_update(update: Update, context: ContextTypes.DEFAULT_TYPE
                             if item["price"] == 0 or item["name"] in matched_old_names
                         ]
                         updated.append(f"{CATALOG[category]['name']} — {len(items)} позиций")
-        price_buffer.clear()
-        report = "\n".join(updated)
-        await update.message.reply_text(f"✅ *Цены обновлены!*\n\n{report}", parse_mode="Markdown")
-        return
+                price_buffer.clear()
+                report = "\n".join(updated)
+                await update.message.reply_text(f"✅ *Цены обновлены!*\n\n{report}", parse_mode="Markdown")
+                return
 
     if len(text) < 50:
         return
