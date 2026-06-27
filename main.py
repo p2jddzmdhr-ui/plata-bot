@@ -777,22 +777,23 @@ async def handle_price_update(update: Update, context: ContextTypes.DEFAULT_TYPE
                     best_sep_idx = None
                     name_lower = new_name.lower()
                     sep_keywords = {
-                        "macbook": [("mac mini", ["mac mini","macmini","mu9d3","mu9e3","mcyt4"]), ("neo", ["neo"]), ("air 13", ["air 13"]), ("air 15", ["air 15"]), ("pro", ["pro"])],
-                        "watch": [("se", ["se"]), ("s10", ["s10","s11"]), ("ultra 3", ["ultra 3"]), ("ultra 2", ["ultra"])],
+                        "macbook": [("mac mini", ["mac mini","macmini","mu9d3","mu9e3","mcyt4"]), ("neo", ["neo","mhff4","mhfg4","mhfa4","mhfd4"]), ("air 13", ["air 13"]), ("air 15", ["air 15"]), ("pro", ["pro","mjlw4","mgdt4","mgdu4","mged4"])],
+                        "watch": [("se", ["se 3","se 2"]), ("s10", ["s10","s11"]), ("ultra 3", ["ultra 3"]), ("ultra 2", ["ultra 2"])],
                         "samsung_watch": [("watch", ["watch fit","watch 7","watch 8","ultra"]), ("buds", ["buds"])],
                         "ipad": [("ipad 11", ["ipad 11"]), ("air", ["air"]), ("pro 11", ["pro 11"]), ("pro 13", ["pro 13"]), ("аксессуары", ["pencil","keyboard"])],
-                        "airpods": [("earpods", ["earpods"]), ("airpods pro", ["pro"]), ("airpods max", ["max"]), ("airpods", ["airpods 4","airpods 3"])],
+                        "airpods": [("earpods", ["earpods"]), ("airpods pro", ["airpods pro"]), ("airpods max", ["airpods max"]), ("airpods", ["airpods 4","airpods 3"])],
                         "xiaomi": [("note 14", ["note 14"]), ("note 15", ["note 15"]), ("mi 15", ["15t","mi 15"]), ("mi 17", ["17t","mi 17"]), ("планшет", ["pad","mi pad"]), ("другое", ["watch","робот","vacuum"])],
                         "poco": [("poco c", ["c85","c100"]), ("poco m", ["m8"]), ("poco x", ["x7","x8"]), ("poco f", ["f6","f8"]), ("планшет", ["poco pad"])],
                         "honor": [("honor magic", ["magic"]), ("huawei", ["huawei","pura","mate x","mate 70","mate 80"]), ("honor планшет", ["pad x","magic pad"]), ("huawei планшет", ["mate pad","matepad"]), ("huawei watch", ["watch","band"]), ("honor", ["honor","x9d"])],
-                        "dyson": [("фен", ["ht01","hd18"]), ("стайлер", ["hs08","hs09","airstyle","aero straight"]), ("пылесос", ["v10","v12s","v15","v16","pencil wash"]), ("очист", ["sp01","ph05"]), ("dreame стайлер", ["airstyle","aero"]), ("dreame пылесос", ["g10","dreame v","dreame h","dreame r"]), ("dreame робот", ["робот f10","l40","x50","x60","dreame d"])],
+                        "dyson": [("фен", ["ht01","hd18"]), ("стайлер", ["hs08","hs09"]), ("пылесос", ["v10","v12","v15","v16","pencil wash"]), ("очист", ["sp01","ph05"]), ("dreame стайлер", ["airstyle","aero straight"]), ("dreame пылесос", ["dreame g","dreame v","dreame h","dreame r"]), ("dreame робот", ["робот","l40","x50","x60","trouver","d9"])],
                         "vacuum": [("вертикальн", ["red solution","flexi","roborock f25","roborock f"]), ("q серия", ["q7","q8","q10"]), ("s серия", ["s8","s9"]), ("revo", ["revo","qv","saros"])],
                         "laptops": [("консол", ["ally","xbox"]), ("обычные", ["гравитон","vivobook","probook","ideapad","machcreator","hp p"]), ("игровые", ["nitro","tuf","rog","legion","katana","vector","titan","gigabyte","raider","msi","acer","thunderobot","samsung book"])],
-                        "pixel": [("pixel 6", ["6a"]), ("pixel 9", ["9a","pixel 9"]), ("pixel 10", ["10a","pixel 10"]), ("pixel watch", ["watch"]), ("аксессуары", ["adapter"])],
+                        "pixel": [("pixel 6", ["6a","pixel 6"]), ("pixel 9", ["9a","pixel 9"]), ("pixel 10", ["10a","pixel 10"]), ("pixel watch", ["pixel watch"]), ("аксессуары", ["adapter","кабель"])],
                         "oneplus": [("смартфон", ["oneplus 13","oneplus nord"]), ("планшет", ["pad"]), ("наушник", ["buds"]), ("watch", ["watch"])],
                         "realme": [("realme c", ["c100"]), ("realme p", ["p3","16 pro"]), ("realme gt", ["gt7","gt8"])],
                         "speakers": [("умные", ["sber","яндекс","vk","капсула"]), ("jbl", ["jbl"]), ("наушник", ["sennheiser","marshall","sony wh","tune"])],
                         "rugged": [("unihertz", ["unihertz","tank"]), ("blackview", ["bv bl","bv 6200","bl 9000"]), ("doogee", ["doogee"]), ("oukitel", ["oukitel","wp"]), ("ulefone", ["ulefone","armor"])],
+                        "cameras": [("insta360", ["insta","360"]), ("dji", ["dji","osmo","mic"])],
                     }
                     if category == "iphone":
                         for i, item in enumerate(cat_items):
