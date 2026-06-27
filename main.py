@@ -633,7 +633,7 @@ def detect_category(line: str):
         return 'samsung_watch'
     if 'Watch 7' in line and 'Huawei' not in line and 'Pixel' not in line:
         return 'samsung_watch'
-    if any(x in line for x in ['MacBook', 'Mac Mini', 'MacMini', 'MU9D3', 'MU9E3', 'MCYT4', 'MHFF4', 'MC6A4', 'MDHF4', 'MDVH4', 'MJLW4', 'MGDT4', 'MGDU4', 'MGED4']):
+    if any(x in line for x in ['MacBook', 'Mac Mini', 'MacMini', 'MU9D3', 'MU9E3', 'MCYT4', 'MHFF4', 'MC6A4', 'MDHF4', 'MDVH4', 'MJLW4', 'MGDT4', 'MGDU4', 'MGED4', 'Magic Mouse']):
         return 'macbook'
     if any(x in line for x in ['iPhone', 'iphone', '🍎']):
         if not any(x in line for x in ['iPad', 'ipad']):
@@ -672,8 +672,8 @@ def detect_category(line: str):
         return 'speakers'
     if any(x in line for x in ['Unihertz', 'DOOGEE', 'Oukitel', 'Ulefone', 'BV BL', 'Tank 3']):
         return 'rugged'
-    if any(x in line for x in ['Battery Pack', 'MagSafe', 'Apple Adapter', 'СЗУ MacBook', 'СЗУ Apple', 'Pitaka', 'Kindle']):
-        return 'accessories'  
+    if any(x in line for x in ['Battery Pack', 'MagSafe', 'Apple Adapter', 'СЗУ Apple', 'Pitaka', 'Kindle', 'СЗУ Samsung', 'АЗУ Samsung', 'СЗУ MacBook', '67W USB-C', '87W USB-C', '96W USB-C', '140W USB-C']):
+        return 'accessories' 
         return None
     
 def main_keyboard():
