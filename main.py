@@ -798,9 +798,12 @@ async def handle_price_update(update: Update, context: ContextTypes.DEFAULT_TYPE
                                 elif any(x in name_lower for x in ["tab"]) and "tab" in sep:
                                     best_sep_idx = i
                             else:
-                                    cat_items.append({"name": new_name, "price": base_price})
-                                    continue
-                    
+                                    break
+
+                    if best_sep_idx is None and category not in ["iphone", "samsung"]:
+                        cat_items.append({"name": new_name, "price": base_price})
+                        continue
+                        
                     # Вставить после разделителя
                     if best_sep_idx is not None:
                         # Найти позицию после разделителя (перед следующим разделителем)
