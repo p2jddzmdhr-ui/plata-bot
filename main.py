@@ -640,7 +640,7 @@ def detect_category(line: str):
             return 'iphone' 
     if any(x in line for x in ['iPad', 'ipad']):
         return 'ipad'
-    if 'AirPods' in line:
+    if any(x in line for x in ['AirPods', 'EarPods']):
         return 'airpods'
     if any(x in line for x in ['Watch SE', 'Watch S1', 'Watch Ultra', 'Watch S10', 'Watch S11', 'Se 2 ', 'Se 3 ', 'S10 4', 'S11 4', 'Ultra 3 4', 'Ultra 2 4']):
         return 'watch'
@@ -672,7 +672,9 @@ def detect_category(line: str):
         return 'speakers'
     if any(x in line for x in ['Unihertz', 'DOOGEE', 'Oukitel', 'Ulefone', 'BV BL', 'Tank 3']):
         return 'rugged'
-    return None
+    if any(x in line for x in ['Battery Pack', 'MagSafe', 'Apple Adapter', 'СЗУ MacBook', 'СЗУ Apple', 'Pitaka', 'Kindle']):
+        return 'accessories'  
+        return None
     
 def main_keyboard():
     return InlineKeyboardMarkup([
