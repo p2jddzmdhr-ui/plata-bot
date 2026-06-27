@@ -827,6 +827,8 @@ async def handle_price_update(update: Update, context: ContextTypes.DEFAULT_TYPE
                                     if sep_key in sep and any(k in name_lower for k in name_keys):
                                         best_sep_idx = i
                                         break
+                                if best_sep_idx is not None:
+                                    break
 
                     if best_sep_idx is None and category not in ["iphone", "samsung"]:
                         cat_items.append({"name": new_name, "price": base_price})
