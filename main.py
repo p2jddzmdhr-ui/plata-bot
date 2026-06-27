@@ -753,23 +753,23 @@ async def handle_price_update(update: Update, context: ContextTypes.DEFAULT_TYPE
     text = update.message.text or update.message.caption or ""
     
    if text.strip() == '/done':
-        if not price_buffer:
-            await update.message.reply_text("⚠️ Буфер пустой — сначала скинь прайс")
-            return
-        updated = []
-        for category, items in price_buffer.items():
-            if items and category in CATALOG:
-                matched_old_names = set()
-                for new_item in items:
-                    for old_item in CATALOG[category]["items"]:
-                        if old_item["price"] != 0:
-                            new_words = set(new_item["name"].lower().split())
-                            old_words = set(old_item["name"].lower().split())
-                            common = new_words & old_words
-                            if len(common) >= 3:
-                                old_item["price"] = new_item["price"]
-                                matched_old_names.add(old_item["name"])
-                                break
+           if not price_buffer:
+              await update.message.reply_text("⚠️ Буфер пустой — сначала скинь прайс")
+              return
+           updated = []
+           for category, items in price_buffer.items():
+               if items and category in CATALOG:
+                   matched_old_names = set()
+                   for new_item in items:
+                       for old_item in CATALOG[category]["items"]:
+                           if old_item["price"] != 0:
+                               new_words = set(new_item["name"].lower().split())
+                               old_words = set(old_item["name"].lower().split())
+                               common = new_words & old_words
+                               if len(common) >= 3:
+                                   old_item["price"] = new_item["price"]
+                                   matched_old_names.add(old_item["name"])
+                                   break
                 CATALOG[category]["items"] = [
                     item for item in CATALOG[category]["items"]
                     if item["price"] == 0 or item["name"] in matched_old_names
