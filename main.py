@@ -771,7 +771,7 @@ async def handle_price_update(update: Update, context: ContextTypes.DEFAULT_TYPE
             if category in CATALOG:
                 markup = MARKUP.get(category, 0.10)
                 for new_item in items:
-                    base_price = round(new_item["price"] / (1 + markup) / 100) * 100
+                    base_price = new_item["price"]
                     new_name = new_item["name"]
                     cat_items = CATALOG[category]["items"]
                     
