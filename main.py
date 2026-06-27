@@ -637,9 +637,7 @@ def detect_category(line: str):
         return 'macbook'
     if any(x in line for x in ['iPhone', 'iphone', '🍎']):
         if not any(x in line for x in ['iPad', 'ipad']):
-            return 'iphone'    if any(x in line for x in ['iPhone', 'iphone', '🍎']):
-        if not any(x in line for x in ['iPad', 'ipad']):
-            return 'iphone'
+            return 'iphone' 
     if any(x in line for x in ['iPad', 'ipad']):
         return 'ipad'
     if 'AirPods' in line:
