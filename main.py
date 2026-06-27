@@ -752,36 +752,35 @@ async def handle_price_update(update: Update, context: ContextTypes.DEFAULT_TYPE
     if user_id != OWNER_ID:
         return
     text = update.message.text or update.message.caption or ""
-    
+
     if text.strip() == '/done':
-            if not price_buffer:
-                await update.message.reply_text("⚠️ Буфер пустой — сначала скинь прайс")
-                return
-            updated = []
-            for category, items in price_buffer.items():
-                if items and category in CATALOG:
-                    matched_old_names = set()
-                    for new_item in items:
-                        for old_item in CATALOG[category]["items"]:
-                            if old_item["price"] != 0:
-                                new_words = set(new_item["name"].lower().split())
-                                old_words = set(old_item["name"].lower().split())
-                                common = new_words & old_words
-                                if len(common) >= 2:
-                                    markup = MARKUP.get(category, 0.10)
-                                    old_item["price"] = round(new_item["price"] / (1 + markup) / 100) * 100
-                                    matched_old_names.add(old_item["name"])
-                                    break
-                    CATALOG[category]["items"] = [
-                        item for item in CATALOG[category]["items"]
-                        if item["price"] == 0 or item["name"] in matched_old_names
-                    ]
-                    updated.append(f"{CATALOG[category]['name']} — {len(items)} позиций")
-            price_buffer.clear()
-            report = "\n".join(updated)
-            await update.message.reply_text(f"✅ *Цены обновлены!*\n\n{report}", parse_mode="Markdown")
+        if not price_buffer:
+            await update.message.reply_text("⚠️ Буфер пустой — сначала скинь прайс")
             return
-   
+
+        for category in CATALOG:
+            CATALOG[category]["items"] = [
+                item for item in CATALOG[category]["items"]
+                if item["price"] == 0
+            ]
+
+        updated = []
+        for category, items in price_buffer.items():
+            if category in CATALOG:
+                markup = MARKUP.get(category, 0.10)
+                for new_item in items:
+                    base_price = round(new_item["price"] / (1 + markup) / 100) * 100
+                    CATALOG[category]["items"].append({
+                        "name": new_item["name"],
+                        "price": base_price
+                    })
+                updated.append(f"{CATALOG[category]['name']} — {len(items)} позиций")
+
+        price_buffer.clear()
+        report = "\n".join(updated)
+        await update.message.reply_text(f"✅ *Цены обновлены!*\n\n{report}", parse_mode="Markdown")
+        return
+
     if len(text) < 50:
         return
 
