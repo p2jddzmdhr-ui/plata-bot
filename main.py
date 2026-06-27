@@ -772,14 +772,14 @@ if text.strip() == '/done':
                                       matched_old_names.add(old_item["name"])
                                       break
                       CATALOG[category]["items"] = [
-                           item for item in CATALOG[category]["items"]
-                           if item["price"] == 0 or item["name"] in matched_old_names
+                          item for item in CATALOG[category]["items"]
+                          if item["price"] == 0 or item["name"] in matched_old_names
                       ]
-                       updated.append(f"{CATALOG[category]['name']} — {len(items)} позиций")
-               price_buffer.clear()
-               report = "\n".join(updated)
-               await update.message.reply_text(f"✅ *Цены обновлены!*\n\n{report}", parse_mode="Markdown")
-               return
+                      updated.append(f"{CATALOG[category]['name']} — {len(items)} позиций")
+              price_buffer.clear()
+              report = "\n".join(updated)
+              await update.message.reply_text(f"✅ *Цены обновлены!*\n\n{report}", parse_mode="Markdown")
+              return
 
     if len(text) < 50:
         return
