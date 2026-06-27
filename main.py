@@ -775,15 +775,58 @@ async def handle_price_update(update: Update, context: ContextTypes.DEFAULT_TYPE
                     
                     # Найти подходящий разделитель
                     best_sep_idx = None
-                    for i, item in enumerate(cat_items):
-                        if item["price"] == 0:
-                            sep = item["name"].lower()
-                            name_lower = new_name.lower()
-                            if category == "iphone":
+                    name_lower = new_name.lower()
+                    sep_keywords = {
+                        "macbook": [("mac mini", ["mac mini","macmini","mu9d3","mu9e3","mcyt4"]), ("neo", ["neo"]), ("air 13", ["air 13"]), ("air 15", ["air 15"]), ("pro", ["pro"])],
+                        "watch": [("se", ["se"]), ("s10", ["s10","s11"]), ("ultra 3", ["ultra 3"]), ("ultra 2", ["ultra"])],
+                        "samsung_watch": [("watch", ["watch fit","watch 7","watch 8","ultra"]), ("buds", ["buds"])],
+                        "ipad": [("ipad 11", ["ipad 11"]), ("air", ["air"]), ("pro 11", ["pro 11"]), ("pro 13", ["pro 13"]), ("аксессуары", ["pencil","keyboard"])],
+                        "airpods": [("earpods", ["earpods"]), ("airpods pro", ["pro"]), ("airpods max", ["max"]), ("airpods", ["airpods 4","airpods 3"])],
+                        "xiaomi": [("note 14", ["note 14"]), ("note 15", ["note 15"]), ("mi 15", ["15t","mi 15"]), ("mi 17", ["17t","mi 17"]), ("планшет", ["pad","mi pad"]), ("другое", ["watch","робот","vacuum"])],
+                        "poco": [("poco c", ["c85","c100"]), ("poco m", ["m8"]), ("poco x", ["x7","x8"]), ("poco f", ["f6","f8"]), ("планшет", ["poco pad"])],
+                        "honor": [("honor magic", ["magic"]), ("huawei", ["huawei","pura","mate x","mate 70","mate 80"]), ("honor планшет", ["pad x","magic pad"]), ("huawei планшет", ["mate pad","matepad"]), ("huawei watch", ["watch","band"]), ("honor", ["honor","x9d"])],
+                        "dyson": [("фен", ["ht01","hd18"]), ("стайлер", ["hs08","hs09","airstyle","aero straight"]), ("пылесос", ["v10","v12s","v15","v16","pencil wash"]), ("очист", ["sp01","ph05"]), ("dreame стайлер", ["airstyle","aero"]), ("dreame пылесос", ["g10","dreame v","dreame h","dreame r"]), ("dreame робот", ["робот f10","l40","x50","x60","dreame d"])],
+                        "vacuum": [("вертикальн", ["red solution","flexi","roborock f25","roborock f"]), ("q серия", ["q7","q8","q10"]), ("s серия", ["s8","s9"]), ("revo", ["revo","qv","saros"])],
+                        "laptops": [("консол", ["ally","xbox"]), ("обычные", ["гравитон","vivobook","probook","ideapad","machcreator","hp p"]), ("игровые", ["nitro","tuf","rog","legion","katana","vector","titan","gigabyte","raider","msi","acer","thunderobot","samsung book"])],
+                        "pixel": [("pixel 6", ["6a"]), ("pixel 9", ["9a","pixel 9"]), ("pixel 10", ["10a","pixel 10"]), ("pixel watch", ["watch"]), ("аксессуары", ["adapter"])],
+                        "oneplus": [("смартфон", ["oneplus 13","oneplus nord"]), ("планшет", ["pad"]), ("наушник", ["buds"]), ("watch", ["watch"])],
+                        "realme": [("realme c", ["c100"]), ("realme p", ["p3","16 pro"]), ("realme gt", ["gt7","gt8"])],
+                        "speakers": [("умные", ["sber","яндекс","vk","капсула"]), ("jbl", ["jbl"]), ("наушник", ["sennheiser","marshall","sony wh","tune"])],
+                        "rugged": [("unihertz", ["unihertz","tank"]), ("blackview", ["bv bl","bv 6200","bl 9000"]), ("doogee", ["doogee"]), ("oukitel", ["oukitel","wp"]), ("ulefone", ["ulefone","armor"])],
+                    }
+                    if category == "iphone":
+                        for i, item in enumerate(cat_items):
+                            if item["price"] == 0:
+                                sep = item["name"].lower()
                                 for num in ["17 pro max", "17 pro", "17 air", "17e", "17", "16 pro max", "16 pro", "16e", "16 plus", "16", "15 pro max", "15 pro", "15 plus", "15", "14 pro max", "14 pro", "14 plus", "14", "13 pro max", "13 pro", "13 mini", "13"]:
                                     if num in name_lower and num.split()[0] in sep:
                                         best_sep_idx = i
                                         break
+                    elif category == "samsung":
+                        for i, item in enumerate(cat_items):
+                            if item["price"] == 0:
+                                sep = item["name"].lower()
+                                if any(x in name_lower for x in ["a07","a17","a26","a36","a37","a56","a57"]) and "a серия" in sep:
+                                    best_sep_idx = i
+                                elif any(x in name_lower for x in ["s25"]) and "s25" in sep:
+                                    best_sep_idx = i
+                                elif any(x in name_lower for x in ["s26"]) and "s26" in sep:
+                                    best_sep_idx = i
+                                elif any(x in name_lower for x in ["z flip"]) and "flip" in sep:
+                                    best_sep_idx = i
+                                elif any(x in name_lower for x in ["z fold"]) and "fold" in sep:
+                                    best_sep_idx = i
+                                elif any(x in name_lower for x in ["tab"]) and "tab" in sep:
+                                    best_sep_idx = i
+                    elif category in sep_keywords:
+                        for i, item in enumerate(cat_items):
+                            if item["price"] == 0:
+                                sep = item["name"].lower()
+                                for sep_key, name_keys in sep_keywords[category]:
+                                    if sep_key in sep and any(k in name_lower for k in name_keys):
+                                        best_sep_idx = i
+                                        break
+
                             elif category == "samsung":
                                 if any(x in name_lower for x in ["a07","a17","a26","a36","a37","a56","a57"]) and "a серия" in sep:
                                     best_sep_idx = i
