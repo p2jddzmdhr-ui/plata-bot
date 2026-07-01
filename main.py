@@ -9,8 +9,8 @@ MANAGER = "plata_mgr"
 ORDER_URL = "https://t.me/plata_mgr?text=%D0%97%D0%B4%D1%80%D0%B0%D0%B2%D1%81%D1%82%D0%B2%D1%83%D0%B9%D1%82%D0%B5!%0A%0A%D0%A5%D0%BE%D1%87%D1%83%20%D0%B7%D0%B0%D0%BA%D0%B0%D0%B7%D0%B0%D1%82%D1%8C%3A%0A%0A%D0%9C%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C%3A%20%0A%D0%A6%D0%B2%D0%B5%D1%82%3A%20%0A%D0%9F%D0%B0%D0%BC%D1%8F%D1%82%D1%8C%3A%20%0A%D0%A4%D0%BB%D0%B0%D0%B3%3A%20"
 OWNER_ID = 294265601
 MARKUP = {
-    "iphone": 0.10,
-    "samsung": 0.10,
+    "iphone": 0.05,
+    "samsung": 0.05,
     "samsung_watch": 0.15,
     "macbook": 0.10,
     "ipad": 0.10,
