@@ -4,8 +4,8 @@ import json
 import hashlib
 import logging
 from urllib.parse import quote
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters, ContextTypes
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, InlineQueryResultArticle, InputTextMessageContent
+from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, InlineQueryHandler, filters, ContextTypes
 
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
 MANAGER = "plata_mgr"
@@ -748,6 +748,7 @@ async def handle_search(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 def main_keyboard():
     return InlineKeyboardMarkup([
+        [InlineKeyboardButton("🔍 Умный поиск — подсказки при наборе", switch_inline_query_current_chat="")],
         [InlineKeyboardButton("📦 Каталог", callback_data="catalog")],
         [InlineKeyboardButton("💬 Менеджер", url=ORDER_URL)],
         [InlineKeyboardButton("ℹ️ О нас", callback_data="about")],
@@ -1087,6 +1088,26 @@ async def unsub_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         await q.answer("Подписка уже удалена", show_alert=True)
 
+async def inline_search(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Живые подсказки при наборе: печатаешь модель — сразу видишь варианты с ценами."""
+    query = re.sub(r'[*_`\[\]]', '', (update.inline_query.query or "")).strip()
+    if query:
+        results = search_catalog(query)
+    else:
+        # пока ничего не набрано — показываем первые товары как пример
+        results = [(ck, c_item) for ck, c in CATALOG.items() for c_item in c["items"] if c_item["price"] > 0][:10]
+    articles = []
+    for cat_key, item in results[:50]:
+        price = get_price(item["price"], cat_key)
+        rid = hashlib.md5(f"{cat_key}:{item['name']}".encode()).hexdigest()
+        articles.append(InlineQueryResultArticle(
+            id=rid,
+            title=item["name"],
+            description=f"💰 {fmt(price)} ₽ • {CATALOG[cat_key]['name']}",
+            input_message_content=InputTextMessageContent(item["name"]),
+        ))
+    await update.inline_query.answer(articles, cache_time=30)
+
 async def stats_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.message.from_user.id not in ADMIN_IDS:
         return
@@ -1136,6 +1157,7 @@ app.add_handler(CommandHandler("done", handle_price_update))
 app.add_handler(CommandHandler("stats", stats_cmd))
 app.add_handler(CommandHandler("broadcast", broadcast_cmd))
 app.add_handler(CallbackQueryHandler(router))
+app.add_handler(InlineQueryHandler(inline_search))
 app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_price_update))
 print("Bot started!")
 app.run_polling()
