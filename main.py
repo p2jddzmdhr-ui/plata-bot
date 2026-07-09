@@ -1,6 +1,7 @@
 import os
 import re
 import logging
+from urllib.parse import quote
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters, ContextTypes
 
@@ -676,6 +677,58 @@ def detect_category(line: str):
         return 'accessories' 
         return None
     
+def search_catalog(query: str):
+    """Поиск товаров по всем категориям. Возвращает список (категория, товар)."""
+    words = [w for w in query.lower().split() if w]
+    if not words:
+        return []
+    results = []
+    for cat_key, cat in CATALOG.items():
+        for item in cat["items"]:
+            if item["price"] == 0:
+                continue  # пропускаем разделители
+            name_lower = item["name"].lower()
+            if all(w in name_lower for w in words):
+                results.append((cat_key, item))
+    return results
+
+async def handle_search(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = (update.message.text or "").strip()
+    stats["users"].add(update.message.from_user.id)
+    if len(query) < 2:
+        await update.message.reply_text(
+            "🔍 Напишите название модели, например: *16 pro*, *dyson*, *airpods*",
+            parse_mode="Markdown")
+        return
+    stats["searches"][query.lower()] = stats["searches"].get(query.lower(), 0) + 1
+    results = search_catalog(query)
+    kb = InlineKeyboardMarkup([
+        [InlineKeyboardButton("🛒 Заказать", url=order_link(query))],
+        [InlineKeyboardButton("📦 Каталог", callback_data="catalog")],
+    ])
+    if not results:
+        await update.message.reply_text(
+            f"😔 По запросу «{query}» ничего не нашлось.\n\n"
+            "Попробуйте написать иначе (например, только модель: *16 pro*) "
+            "или загляните в каталог — а менеджер поможет найти что угодно 👇",
+            reply_markup=kb, parse_mode="Markdown")
+        return
+    lines = [f"🔍 *Нашлось по запросу «{query}»:*\n"]
+    shown = 0
+    last_cat = None
+    for cat_key, item in results:
+        if shown >= 15:
+            break
+        if cat_key != last_cat:
+            lines.append(f"\n{CATALOG[cat_key]['name']}")
+            last_cat = cat_key
+        price_str = f"{get_price(item['price'], cat_key):,}".replace(",", " ")
+        lines.append(f"• {item['name']}\n   💰 {price_str} ₽")
+        shown += 1
+    if len(results) > 15:
+        lines.append(f"\n_...и ещё {len(results) - 15}. Уточните запрос или спросите менеджера!_")
+    await update.message.reply_text("\n".join(lines), reply_markup=kb, parse_mode="Markdown")
+
 def main_keyboard():
     return InlineKeyboardMarkup([
         [InlineKeyboardButton("📦 Каталог", callback_data="catalog")],
@@ -703,7 +756,9 @@ def catalog_keyboard():
     return InlineKeyboardMarkup(kb)
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    text = "👋 Добро пожаловать в *Plata*!\n\nОригинальная техника по лучшим ценам 🔥\n\n📱💻🖥⌚️🎧🖱⌨️🎮\n\n📍 Москва, ТК Митинский Радиорынок, пав. 450\n🚚 Доставка по всей России\n✅ Гарантия на все товары\n\nВыберите раздел:"
+    if update.effective_user:
+        stats["users"].add(update.effective_user.id)
+    text = "👋 Добро пожаловать в *Plata*!\n\nОригинальная техника по лучшим ценам 🔥\n\n📱💻🖥⌚️🎧🖱⌨️🎮\n\n📍 Москва, ТК Митинский Радиорынок, пав. 450\n🚚 Доставка по всей России\n✅ Гарантия на все товары\n\n🔍 Просто напишите модель (например, *16 pro*) — и я найду её с ценой!\n\nИли выберите раздел:"
     if update.message:
         await update.message.reply_text(text, reply_markup=main_keyboard(), parse_mode="Markdown")
     else:
@@ -722,6 +777,8 @@ async def category_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not cat:
         await q.answer("Категория не найдена", show_alert=True)
         return
+    stats["users"].add(q.from_user.id)
+    stats["categories"][cat_key] = stats["categories"].get(cat_key, 0) + 1
     lines = [f"*{cat['name']}*\n"]
     for item in cat["items"]:
         if item['price'] == 0:
@@ -733,7 +790,7 @@ async def category_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if len(text) > 4000:
         text = text[:4000] + "\n\n_...уточняйте у менеджера!_"
     kb = InlineKeyboardMarkup([
-        [InlineKeyboardButton("🛒 Заказать", url=ORDER_URL)],
+        [InlineKeyboardButton("🛒 Заказать", url=order_link(cat['name']))],
         [InlineKeyboardButton("◀️ Назад", callback_data="catalog")],
     ])
     await q.edit_message_text(text, reply_markup=kb, parse_mode="Markdown")
@@ -748,10 +805,17 @@ async def about_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     ])
     await q.edit_message_text(text, reply_markup=kb, parse_mode="Markdown")
 price_buffer = {}
+stats = {"users": set(), "categories": {}, "searches": {}}
+
+def order_link(item_text: str) -> str:
+    """Ссылка на менеджера с уже вписанным товаром."""
+    msg = f"Здравствуйте!\n\nХочу заказать:\n{item_text}\n\nЦвет: \nПамять: "
+    return f"https://t.me/{MANAGER}?text={quote(msg)}"
 
 async def handle_price_update(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.message.from_user.id
     if user_id not in ADMIN_IDS:
+        await handle_search(update, context)
         return
     text = update.message.text or update.message.caption or ""
 
@@ -880,9 +944,50 @@ async def router(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif d.startswith("cat_"): await category_handler(update, context)
     elif d == "about": await about_handler(update, context)
 
+async def stats_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.message.from_user.id not in ADMIN_IDS:
+        return
+    top_cats = sorted(stats["categories"].items(), key=lambda x: -x[1])[:10]
+    top_q = sorted(stats["searches"].items(), key=lambda x: -x[1])[:10]
+    lines = [f"📊 *Статистика с момента запуска бота*",
+             f"\n👥 Пользователей: {len(stats['users'])}"]
+    if top_cats:
+        lines.append("\n📦 *Топ категорий:*")
+        for k, v in top_cats:
+            lines.append(f"• {CATALOG[k]['name']} — {v}")
+    if top_q:
+        lines.append("\n🔍 *Топ запросов:*")
+        for k, v in top_q:
+            lines.append(f"• {k} — {v}")
+    if not top_cats and not top_q:
+        lines.append("\nПока никто ничего не смотрел 🤷")
+    await update.message.reply_text("\n".join(lines), parse_mode="Markdown")
+
+async def broadcast_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.message.from_user.id not in ADMIN_IDS:
+        return
+    text = update.message.text.partition(" ")[2].strip()
+    if not text:
+        await update.message.reply_text(
+            "✍️ Напиши так:\n/broadcast Текст рассылки\n\n"
+            f"Сейчас в списке {len(stats['users'])} чел. (кто писал боту после последнего перезапуска)")
+        return
+    sent, failed = 0, 0
+    for uid in list(stats["users"]):
+        if uid in ADMIN_IDS:
+            continue
+        try:
+            await context.bot.send_message(uid, text)
+            sent += 1
+        except Exception:
+            failed += 1
+    await update.message.reply_text(f"📣 Готово! Отправлено: {sent}, не доставлено: {failed}")
+
 app = Application.builder().token(BOT_TOKEN).build()
 app.add_handler(CommandHandler("start", start))
 app.add_handler(CommandHandler("done", handle_price_update))
+app.add_handler(CommandHandler("stats", stats_cmd))
+app.add_handler(CommandHandler("broadcast", broadcast_cmd))
 app.add_handler(CallbackQueryHandler(router))
 app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_price_update))
 print("Bot started!")
