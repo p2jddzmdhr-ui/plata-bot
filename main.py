@@ -1129,9 +1129,13 @@ async def inline_search(update: Update, context: ContextTypes.DEFAULT_TYPE):
             id=rid,
             title=item["name"],
             description=f"💰 {fmt(price)} ₽ • {CATALOG[cat_key]['name']}",
-            input_message_content=InputTextMessageContent(item["name"]),
+            input_message_content=InputTextMessageContent(
+                f"{item['name']}\n💰 {fmt(price)} ₽"),
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton("🛒 Заказать", url=order_link(item["name"]))],
+            ]),
         ))
-    await update.inline_query.answer(articles, cache_time=30)
+    await update.inline_query.answer(articles, cache_time=0)
 
 async def stats_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.message.from_user.id not in ADMIN_IDS:
