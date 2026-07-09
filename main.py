@@ -684,17 +684,60 @@ def _strip_mem(s: str) -> str:
     """Убирает объёмы памяти вида 16/512, чтобы «16 pro» не находил телефоны с памятью 16/512."""
     return re.sub(r'\d+/\d+', ' ', s)
 
+RU_SYN = {
+    "айфон": "iphone", "айфона": "iphone", "айфоны": "iphone", "афон": "iphone",
+    "самсунг": "samsung", "самсунга": "samsung",
+    "макбук": "macbook", "макбука": "macbook", "мак": "mac",
+    "айпад": "ipad", "айпэд": "ipad",
+    "аирподс": "airpods", "эирподс": "airpods", "эйрподс": "airpods", "аирподсы": "airpods",
+    "дайсон": "dyson", "дайсона": "dyson", "дрим": "dreame", "дриме": "dreame",
+    "сяоми": "xiaomi", "ксиоми": "xiaomi", "ксяоми": "xiaomi", "ксиаоми": "xiaomi",
+    "поко": "poco", "пиксель": "pixel", "пиксел": "pixel",
+    "хонор": "honor", "хуавей": "huawei", "хуавэй": "huawei",
+    "ванплюс": "oneplus", "ванплас": "oneplus", "уанплюс": "oneplus",
+    "реалми": "realme", "реалме": "realme", "гармин": "garmin",
+    "маршал": "marshall", "маршалл": "marshall", "сони": "sony",
+    "пс5": "ps5", "пс": "ps5", "плейстейшн": "ps5",
+    "вотч": "watch", "воч": "watch", "часы": "watch", "эпл": "apple", "эппл": "apple",
+    "про": "pro", "макс": "max", "плюс": "plus", "мини": "mini",
+    "эйр": "air", "аир": "air", "айр": "air", "ультра": "ultra",
+    "флип": "flip", "фолд": "fold", "таб": "tab", "бадс": "buds",
+    "киндл": "kindle", "ноут": "note", "редми": "note", "з": "z",
+}
+_TRANSLIT = str.maketrans("абвгдезиклмнопрстуфхц", "abvgdeziklmnoprstufxc")
+
+def _normalize_word(w: str) -> str:
+    """Русское слово -> латинское название из каталога."""
+    w = w.replace("гб", "gb").replace("тб", "tb")
+    if w in RU_SYN:
+        return RU_SYN[w]
+    # слова с цифрами вроде «с26», «а57» — транслитерируем побуквенно
+    if any(ch.isdigit() for ch in w) and any('а' <= ch <= 'я' for ch in w):
+        return w.translate(_TRANSLIT)
+    return w
+
 def search_catalog(query: str):
     """Поиск товаров по всем категориям. Возвращает список (категория, товар).
-    Сначала точные совпадения по модели; совпадения только по объёму памяти — как запасной вариант."""
-    words = [w for w in query.lower().split() if w]
+    Понимает русские запросы («айфон 17 про»), а название бренда сужает поиск до его категории."""
+    words = [_normalize_word(w) for w in query.lower().split() if w]
+    words = [w for w in words if w]
     if not words:
         return []
+    # Если одно из слов — это целая категория (iphone, xiaomi...), ищем только в ней
+    cat_words = [w for w in words if w in CATALOG]
+    if len(cat_words) == 1:
+        search_space = {cat_words[0]: CATALOG[cat_words[0]]}
+        words = [w for w in words if w != cat_words[0]]
+    else:
+        search_space = CATALOG
     exact, loose = [], []
-    for cat_key, cat in CATALOG.items():
+    for cat_key, cat in search_space.items():
         for item in cat["items"]:
             if item["price"] == 0:
                 continue  # пропускаем разделители
+            if not words:  # запрос был только брендом — показываем всю категорию
+                exact.append((cat_key, item))
+                continue
             name_lower = item["name"].lower()
             if all(w in name_lower for w in words):
                 if all(w in _strip_mem(name_lower) for w in words):
@@ -732,7 +775,7 @@ async def handle_search(update: Update, context: ContextTypes.DEFAULT_TYPE):
     results = search_catalog(query)
     if not results:
         kb = InlineKeyboardMarkup([
-            [InlineKeyboardButton("🛒 Заказать", url=order_link(query))],
+            [InlineKeyboardButton("💬 Спросить менеджера", url=ORDER_URL)],
             [InlineKeyboardButton("📦 Каталог", callback_data="catalog")],
         ])
         await update.message.reply_text(
@@ -758,7 +801,7 @@ async def handle_search(update: Update, context: ContextTypes.DEFAULT_TYPE):
     kb = InlineKeyboardMarkup([
         [InlineKeyboardButton("🛒 Заказать", url=order_link(query))],
         [InlineKeyboardButton("🔔 Следить за ценой", callback_data="subscribe")],
-        [InlineKeyboardButton("📦 Каталог", callback_data="catalog")],
+        [InlineKeyboardButton("💬 Менеджер", url=ORDER_URL), InlineKeyboardButton("📦 Каталог", callback_data="catalog")],
     ])
     await update.message.reply_text("\n".join(lines), reply_markup=kb, parse_mode="Markdown")
 
