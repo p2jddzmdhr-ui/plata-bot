@@ -857,6 +857,7 @@ CATALOG_FILE = os.path.join(DATA_DIR, "catalog.json")
 BOT_DATA_FILE = os.path.join(DATA_DIR, "bot_data.json")
 
 SUBS = []  # подписки на снижение цены: {"user": id, "query": "16 pro", "price": 74000}
+INLINE_CACHE = {}  # id подсказки -> название товара (для кнопки 🔔 на карточках)
 
 def save_catalog():
     try:
@@ -921,6 +922,8 @@ def order_link(item_text: str) -> str:
     return f"https://t.me/{MANAGER}?text={quote(msg)}"
 
 async def handle_price_update(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.message.via_bot:  # карточка из умного поиска — не отвечаем на неё
+        return
     user_id = update.message.from_user.id
     if user_id not in ADMIN_IDS:
         await handle_search(update, context)
@@ -1078,7 +1081,30 @@ async def router(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif d.startswith("cat_"): await category_handler(update, context)
     elif d == "about": await about_handler(update, context)
     elif d == "subscribe": await subscribe_handler(update, context)
+    elif d.startswith("isub_"): await inline_sub_handler(update, context)
     elif d.startswith("unsub_"): await unsub_handler(update, context)
+
+async def inline_sub_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Подписка через 🔔 на карточке из умного поиска."""
+    q = update.callback_query
+    rid = q.data.replace("isub_", "")
+    name = INLINE_CACHE.get(rid)
+    if not name:
+        await q.answer("Не получилось 😔 Найдите товар в поиске ещё раз и повторите", show_alert=True)
+        return
+    price = min_price_for(name)
+    if price is None:
+        await q.answer("Этого товара сейчас нет в каталоге 😔", show_alert=True)
+        return
+    uid = q.from_user.id
+    global SUBS
+    SUBS = [s for s in SUBS if not (s["user"] == uid and s["query"] == name)]
+    if len([s for s in SUBS if s["user"] == uid]) >= 10:
+        await q.answer("Максимум 10 подписок 🙈 Дождитесь уведомлений по старым.", show_alert=True)
+        return
+    SUBS.append({"user": uid, "query": name, "price": price})
+    save_bot_data()
+    await q.answer(f"🔔 Слежу за этим товаром!\nСообщу, если цена станет ниже {fmt(price)} ₽", show_alert=True)
 
 async def subscribe_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
@@ -1122,9 +1148,12 @@ async def inline_search(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # пока ничего не набрано — показываем первые товары как пример
         results = [(ck, c_item) for ck, c in CATALOG.items() for c_item in c["items"] if c_item["price"] > 0][:10]
     articles = []
+    if len(INLINE_CACHE) > 2000:
+        INLINE_CACHE.clear()
     for cat_key, item in results[:50]:
         price = get_price(item["price"], cat_key)
         rid = hashlib.md5(f"{cat_key}:{item['name']}".encode()).hexdigest()
+        INLINE_CACHE[rid] = item["name"]
         articles.append(InlineQueryResultArticle(
             id=rid,
             title=item["name"],
@@ -1133,6 +1162,7 @@ async def inline_search(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 f"{item['name']}\n💰 {fmt(price)} ₽"),
             reply_markup=InlineKeyboardMarkup([
                 [InlineKeyboardButton("🛒 Заказать", url=order_link(item["name"]))],
+                [InlineKeyboardButton("🔔 Следить за ценой", callback_data=f"isub_{rid}")],
             ]),
         ))
     await update.inline_query.answer(articles, cache_time=0)
