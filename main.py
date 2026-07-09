@@ -1,6 +1,7 @@
 import os
 import re
 import json
+import asyncio
 import hashlib
 import logging
 from urllib.parse import quote
@@ -676,8 +677,8 @@ def detect_category(line: str):
     if any(x in line for x in ['Unihertz', 'DOOGEE', 'Oukitel', 'Ulefone', 'BV BL', 'Tank 3']):
         return 'rugged'
     if any(x in line for x in ['Battery Pack', 'MagSafe', 'Apple Adapter', 'СЗУ Apple', 'Pitaka', 'Kindle', 'СЗУ MacBook', '67W USB-C', '87W USB-C', '96W USB-C', '140W USB-C', '25W СЗУ', '45W СЗУ', '60W СЗУ', '65W СЗУ', 'АЗУ Samsung']):
-        return 'accessories' 
-        return None
+        return 'accessories'
+    return None
     
 def _strip_mem(s: str) -> str:
     """Убирает объёмы памяти вида 16/512, чтобы «16 pro» не находил телефоны с памятью 16/512."""
@@ -804,12 +805,12 @@ async def catalog_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def category_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
-    await q.answer()
     cat_key = q.data.replace("cat_", "")
     cat = CATALOG.get(cat_key)
     if not cat:
         await q.answer("Категория не найдена", show_alert=True)
         return
+    await q.answer()
     track_user(q.from_user.id)
     stats["categories"][cat_key] = stats["categories"].get(cat_key, 0) + 1
     lines = [f"*{cat['name']}*\n"]
@@ -921,8 +922,24 @@ def order_link(item_text: str) -> str:
     msg = f"Здравствуйте!\n\nХочу заказать:\n{item_text}\n\nЦвет: \nПамять: "
     return f"https://t.me/{MANAGER}?text={quote(msg)}"
 
+async def handle_card_reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Ответ бота на карточку из умного поиска: заказ и слежение за ценой."""
+    name = (update.message.text or "").split("\n")[0].strip()
+    if not name:
+        return
+    track_user(update.message.from_user.id)
+    context.user_data["last_query"] = name
+    kb = InlineKeyboardMarkup([
+        [InlineKeyboardButton("🛒 Заказать", url=order_link(name))],
+        [InlineKeyboardButton("🔔 Следить за ценой", callback_data="subscribe")],
+        [InlineKeyboardButton("📦 Каталог", callback_data="catalog")],
+    ])
+    await update.message.reply_text("Отличный выбор! 👍 Что делаем дальше?", reply_markup=kb)
+
 async def handle_price_update(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.message.via_bot:  # карточка из умного поиска — не отвечаем на неё
+    if update.message.via_bot:  # сообщение отправлено через умный поиск
+        if update.message.via_bot.id == context.bot.id:
+            await handle_card_reply(update, context)
         return
     user_id = update.message.from_user.id
     if user_id not in ADMIN_IDS:
@@ -1044,6 +1061,7 @@ async def handle_price_update(update: Update, context: ContextTypes.DEFAULT_TYPE
                         f"🔻 Цена снизилась!\n\n«{s['query']}»:\nбыло от {fmt(s['price'])} ₽ → теперь от {fmt(new_price)} ₽ 🔥",
                         reply_markup=kb)
                     notified += 1
+                    await asyncio.sleep(0.05)
                 except Exception:
                     pass
             s["price"] = new_price
@@ -1068,6 +1086,8 @@ async def handle_price_update(update: Update, context: ContextTypes.DEFAULT_TYPE
         if category:
             if category not in price_buffer:
                 price_buffer[category] = []
+            if any(x["name"] == name for x in price_buffer[category]):
+                continue  # дубль строки в прайсе — пропускаем
             price_buffer[category].append({"name": name, "price": price})
             count += 1
 
@@ -1141,31 +1161,42 @@ async def unsub_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def inline_search(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Живые подсказки при наборе: печатаешь модель — сразу видишь варианты с ценами."""
-    query = re.sub(r'[*_`\[\]]', '', (update.inline_query.query or "")).strip()
-    if query:
-        results = search_catalog(query)
-    else:
-        # пока ничего не набрано — показываем первые товары как пример
-        results = [(ck, c_item) for ck, c in CATALOG.items() for c_item in c["items"] if c_item["price"] > 0][:10]
-    articles = []
-    if len(INLINE_CACHE) > 2000:
-        INLINE_CACHE.clear()
-    for cat_key, item in results[:50]:
-        price = get_price(item["price"], cat_key)
-        rid = hashlib.md5(f"{cat_key}:{item['name']}".encode()).hexdigest()
-        INLINE_CACHE[rid] = item["name"]
-        articles.append(InlineQueryResultArticle(
-            id=rid,
-            title=item["name"],
-            description=f"💰 {fmt(price)} ₽ • {CATALOG[cat_key]['name']}",
-            input_message_content=InputTextMessageContent(
-                f"{item['name']}\n💰 {fmt(price)} ₽"),
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("🛒 Заказать", url=order_link(item["name"]))],
-                [InlineKeyboardButton("🔔 Следить за ценой", callback_data=f"isub_{rid}")],
-            ]),
-        ))
-    await update.inline_query.answer(articles, cache_time=0)
+    try:
+        query = re.sub(r'[*_`\[\]]', '', (update.inline_query.query or "")).strip()
+        if query:
+            results = search_catalog(query)
+        else:
+            # пока ничего не набрано — показываем первые товары как пример
+            results = [(ck, c_item) for ck, c in CATALOG.items() for c_item in c["items"] if c_item["price"] > 0][:10]
+        articles = []
+        used_ids = set()
+        if len(INLINE_CACHE) > 2000:
+            INLINE_CACHE.clear()
+        for idx, (cat_key, item) in enumerate(results[:50]):
+            price = get_price(item["price"], cat_key)
+            rid = hashlib.md5(f"{cat_key}:{item['name']}".encode()).hexdigest()
+            if rid in used_ids:  # дубль товара в каталоге — делаем ID уникальным
+                rid = hashlib.md5(f"{cat_key}:{idx}:{item['name']}".encode()).hexdigest()
+            used_ids.add(rid)
+            INLINE_CACHE[rid] = item["name"]
+            articles.append(InlineQueryResultArticle(
+                id=rid,
+                title=item["name"],
+                description=f"💰 {fmt(price)} ₽ • {CATALOG[cat_key]['name']}",
+                input_message_content=InputTextMessageContent(
+                    f"{item['name']}\n💰 {fmt(price)} ₽"),
+                reply_markup=InlineKeyboardMarkup([
+                    [InlineKeyboardButton("🛒 Заказать", url=order_link(item["name"]))],
+                    [InlineKeyboardButton("🔔 Следить за ценой", callback_data=f"isub_{rid}")],
+                ]),
+            ))
+        await update.inline_query.answer(articles, cache_time=0)
+    except Exception as e:
+        log.error(f"Ошибка умного поиска (запрос «{update.inline_query.query}»): {e}")
+        try:
+            await update.inline_query.answer([], cache_time=0)
+        except Exception:
+            pass
 
 async def stats_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.message.from_user.id not in ADMIN_IDS:
@@ -1203,6 +1234,7 @@ async def broadcast_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
         try:
             await context.bot.send_message(uid, text)
             sent += 1
+            await asyncio.sleep(0.05)  # пауза, чтобы не упереться в лимиты Telegram
         except Exception:
             failed += 1
     await update.message.reply_text(f"📣 Готово! Отправлено: {sent}, не доставлено: {failed}")
