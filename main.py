@@ -1,5 +1,7 @@
 import os
 import re
+import json
+import hashlib
 import logging
 from urllib.parse import quote
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
@@ -677,36 +679,46 @@ def detect_category(line: str):
         return 'accessories' 
         return None
     
+def _strip_mem(s: str) -> str:
+    """Убирает объёмы памяти вида 16/512, чтобы «16 pro» не находил телефоны с памятью 16/512."""
+    return re.sub(r'\d+/\d+', ' ', s)
+
 def search_catalog(query: str):
-    """Поиск товаров по всем категориям. Возвращает список (категория, товар)."""
+    """Поиск товаров по всем категориям. Возвращает список (категория, товар).
+    Сначала точные совпадения по модели; совпадения только по объёму памяти — как запасной вариант."""
     words = [w for w in query.lower().split() if w]
     if not words:
         return []
-    results = []
+    exact, loose = [], []
     for cat_key, cat in CATALOG.items():
         for item in cat["items"]:
             if item["price"] == 0:
                 continue  # пропускаем разделители
             name_lower = item["name"].lower()
             if all(w in name_lower for w in words):
-                results.append((cat_key, item))
-    return results
+                if all(w in _strip_mem(name_lower) for w in words):
+                    exact.append((cat_key, item))
+                else:
+                    loose.append((cat_key, item))
+    return exact if exact else loose
 
 async def handle_search(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = (update.message.text or "").strip()
-    stats["users"].add(update.message.from_user.id)
+    query = re.sub(r'[*_`\[\]]', '', query).strip()  # чистим символы, ломающие разметку
+    track_user(update.message.from_user.id)
     if len(query) < 2:
         await update.message.reply_text(
             "🔍 Напишите название модели, например: *16 pro*, *dyson*, *airpods*",
             parse_mode="Markdown")
         return
     stats["searches"][query.lower()] = stats["searches"].get(query.lower(), 0) + 1
+    context.user_data["last_query"] = query
     results = search_catalog(query)
-    kb = InlineKeyboardMarkup([
-        [InlineKeyboardButton("🛒 Заказать", url=order_link(query))],
-        [InlineKeyboardButton("📦 Каталог", callback_data="catalog")],
-    ])
     if not results:
+        kb = InlineKeyboardMarkup([
+            [InlineKeyboardButton("🛒 Заказать", url=order_link(query))],
+            [InlineKeyboardButton("📦 Каталог", callback_data="catalog")],
+        ])
         await update.message.reply_text(
             f"😔 По запросу «{query}» ничего не нашлось.\n\n"
             "Попробуйте написать иначе (например, только модель: *16 pro*) "
@@ -727,6 +739,11 @@ async def handle_search(update: Update, context: ContextTypes.DEFAULT_TYPE):
         shown += 1
     if len(results) > 15:
         lines.append(f"\n_...и ещё {len(results) - 15}. Уточните запрос или спросите менеджера!_")
+    kb = InlineKeyboardMarkup([
+        [InlineKeyboardButton("🛒 Заказать", url=order_link(query))],
+        [InlineKeyboardButton("🔔 Следить за ценой", callback_data="subscribe")],
+        [InlineKeyboardButton("📦 Каталог", callback_data="catalog")],
+    ])
     await update.message.reply_text("\n".join(lines), reply_markup=kb, parse_mode="Markdown")
 
 def main_keyboard():
@@ -757,7 +774,7 @@ def catalog_keyboard():
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_user:
-        stats["users"].add(update.effective_user.id)
+        track_user(update.effective_user.id)
     text = "👋 Добро пожаловать в *Plata*!\n\nОригинальная техника по лучшим ценам 🔥\n\n📱💻🖥⌚️🎧🖱⌨️🎮\n\n📍 Москва, ТК Митинский Радиорынок, пав. 450\n🚚 Доставка по всей России\n✅ Гарантия на все товары\n\n🔍 Просто напишите модель (например, *16 pro*) — и я найду её с ценой!\n\nИли выберите раздел:"
     if update.message:
         await update.message.reply_text(text, reply_markup=main_keyboard(), parse_mode="Markdown")
@@ -777,7 +794,7 @@ async def category_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not cat:
         await q.answer("Категория не найдена", show_alert=True)
         return
-    stats["users"].add(q.from_user.id)
+    track_user(q.from_user.id)
     stats["categories"][cat_key] = stats["categories"].get(cat_key, 0) + 1
     lines = [f"*{cat['name']}*\n"]
     for item in cat["items"]:
@@ -806,6 +823,71 @@ async def about_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await q.edit_message_text(text, reply_markup=kb, parse_mode="Markdown")
 price_buffer = {}
 stats = {"users": set(), "categories": {}, "searches": {}}
+
+# ══════════ Сохранение данных (переживает перезапуски) ══════════
+# Если на Railway подключён Volume с путём /data — файлы будут вечными.
+DATA_DIR = "/data" if os.path.isdir("/data") else "."
+CATALOG_FILE = os.path.join(DATA_DIR, "catalog.json")
+BOT_DATA_FILE = os.path.join(DATA_DIR, "bot_data.json")
+
+SUBS = []  # подписки на снижение цены: {"user": id, "query": "16 pro", "price": 74000}
+
+def save_catalog():
+    try:
+        with open(CATALOG_FILE, "w", encoding="utf-8") as f:
+            json.dump(CATALOG, f, ensure_ascii=False)
+        log.info("Каталог сохранён в файл")
+    except Exception as e:
+        log.error(f"Не удалось сохранить каталог: {e}")
+
+def load_catalog():
+    try:
+        if os.path.exists(CATALOG_FILE):
+            with open(CATALOG_FILE, encoding="utf-8") as f:
+                data = json.load(f)
+            CATALOG.clear()
+            CATALOG.update(data)
+            log.info("Каталог загружен из файла")
+    except Exception as e:
+        log.error(f"Не удалось загрузить каталог: {e}")
+
+def save_bot_data():
+    try:
+        with open(BOT_DATA_FILE, "w", encoding="utf-8") as f:
+            json.dump({"users": list(stats["users"]), "subs": SUBS}, f, ensure_ascii=False)
+    except Exception as e:
+        log.error(f"Не удалось сохранить данные: {e}")
+
+def load_bot_data():
+    global SUBS
+    try:
+        if os.path.exists(BOT_DATA_FILE):
+            with open(BOT_DATA_FILE, encoding="utf-8") as f:
+                d = json.load(f)
+            stats["users"].update(d.get("users", []))
+            SUBS = d.get("subs", [])
+            log.info(f"Загружено: {len(stats['users'])} пользователей, {len(SUBS)} подписок")
+    except Exception as e:
+        log.error(f"Не удалось загрузить данные: {e}")
+
+def track_user(uid: int):
+    if uid not in stats["users"]:
+        stats["users"].add(uid)
+        save_bot_data()
+
+def min_price_for(query: str):
+    """Минимальная цена (для покупателя) по поисковому запросу."""
+    results = search_catalog(query)
+    if not results:
+        return None
+    return min(get_price(item["price"], cat_key) for cat_key, item in results)
+
+def qhash(uid: int, query: str) -> str:
+    return hashlib.md5(f"{uid}:{query}".encode()).hexdigest()[:12]
+
+def fmt(price: int) -> str:
+    return f"{price:,}".replace(",", " ")
+# ═══════════════════════════════════════════════════════════════
 
 def order_link(item_text: str) -> str:
     """Ссылка на менеджера с уже вписанным товаром."""
@@ -914,8 +996,34 @@ async def handle_price_update(update: Update, context: ContextTypes.DEFAULT_TYPE
                 updated.append(f"{CATALOG[category]['name']} — {len(items)} позиций")
 
         price_buffer.clear()
+        save_catalog()
+
+        # 🔔 Уведомляем подписчиков о снижении цен
+        notified = 0
+        for s in SUBS:
+            new_price = min_price_for(s["query"])
+            if new_price is None:
+                continue
+            if new_price < s["price"]:
+                try:
+                    kb = InlineKeyboardMarkup([
+                        [InlineKeyboardButton("🛒 Заказать", url=order_link(s["query"]))],
+                        [InlineKeyboardButton("🔕 Больше не следить", callback_data=f"unsub_{qhash(s['user'], s['query'])}")],
+                    ])
+                    await context.bot.send_message(
+                        s["user"],
+                        f"🔻 Цена снизилась!\n\n«{s['query']}»:\nбыло от {fmt(s['price'])} ₽ → теперь от {fmt(new_price)} ₽ 🔥",
+                        reply_markup=kb)
+                    notified += 1
+                except Exception:
+                    pass
+            s["price"] = new_price
+        save_bot_data()
+
         report = "\n".join(updated)
-        await update.message.reply_text(f"✅ *Цены обновлены!*\n\n{report}", parse_mode="Markdown")
+        if notified:
+            report += f"\n\n🔔 Уведомлений о снижении цены: {notified}"
+        await update.message.reply_text(f"✅ *Цены обновлены и сохранены!*\n\n{report}", parse_mode="Markdown")
         return
 
     if len(text) < 50:
@@ -943,14 +1051,50 @@ async def router(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif d == "catalog": await catalog_handler(update, context)
     elif d.startswith("cat_"): await category_handler(update, context)
     elif d == "about": await about_handler(update, context)
+    elif d == "subscribe": await subscribe_handler(update, context)
+    elif d.startswith("unsub_"): await unsub_handler(update, context)
+
+async def subscribe_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    q = update.callback_query
+    query = context.user_data.get("last_query")
+    if not query:
+        await q.answer("Сначала найдите товар поиском 🔍", show_alert=True)
+        return
+    price = min_price_for(query)
+    if price is None:
+        await q.answer("По этому запросу сейчас нет товаров 😔", show_alert=True)
+        return
+    uid = q.from_user.id
+    global SUBS
+    SUBS = [s for s in SUBS if not (s["user"] == uid and s["query"] == query)]
+    if len([s for s in SUBS if s["user"] == uid]) >= 10:
+        await q.answer("Максимум 10 подписок 🙈 Дождитесь уведомлений по старым.", show_alert=True)
+        return
+    SUBS.append({"user": uid, "query": query, "price": price})
+    save_bot_data()
+    await q.answer(f"🔔 Слежу за «{query}»!\nСообщу, если цена станет ниже {fmt(price)} ₽", show_alert=True)
+
+async def unsub_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    q = update.callback_query
+    uid = q.from_user.id
+    h = q.data.replace("unsub_", "")
+    global SUBS
+    before = len(SUBS)
+    SUBS = [s for s in SUBS if not (s["user"] == uid and qhash(uid, s["query"]) == h)]
+    if len(SUBS) < before:
+        save_bot_data()
+        await q.answer("🔕 Больше не слежу за этим товаром", show_alert=True)
+    else:
+        await q.answer("Подписка уже удалена", show_alert=True)
 
 async def stats_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.message.from_user.id not in ADMIN_IDS:
         return
     top_cats = sorted(stats["categories"].items(), key=lambda x: -x[1])[:10]
     top_q = sorted(stats["searches"].items(), key=lambda x: -x[1])[:10]
-    lines = [f"📊 *Статистика с момента запуска бота*",
-             f"\n👥 Пользователей: {len(stats['users'])}"]
+    lines = [f"📊 *Статистика*",
+             f"\n👥 Пользователей: {len(stats['users'])}",
+             f"🔔 Подписок на цены: {len(SUBS)}"]
     if top_cats:
         lines.append("\n📦 *Топ категорий:*")
         for k, v in top_cats:
@@ -982,6 +1126,9 @@ async def broadcast_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
         except Exception:
             failed += 1
     await update.message.reply_text(f"📣 Готово! Отправлено: {sent}, не доставлено: {failed}")
+
+load_catalog()
+load_bot_data()
 
 app = Application.builder().token(BOT_TOKEN).build()
 app.add_handler(CommandHandler("start", start))
