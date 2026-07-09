@@ -702,6 +702,21 @@ def search_catalog(query: str):
                     loose.append((cat_key, item))
     return exact if exact else loose
 
+_CAP_RE = re.compile(r'^\d+(gb|tb)$')
+_MEM_RE = re.compile(r'^\w?\d+/\d+')
+_BARE_CAPS = {'32', '64', '128', '256', '512', '1tb', '2tb', '40', '41', '42', '43', '44', '45', '46', '47', '49'}
+
+def _group_key(name: str) -> str:
+    """Определяет «модель» товара (всё до объёма памяти/размера) для группировки в каталоге."""
+    clean = re.sub(r'[^0-9a-zA-Zа-яА-ЯёЁ+./ -]', ' ', name)
+    key = []
+    for t in clean.split():
+        tl = t.lower()
+        if _CAP_RE.match(tl) or _MEM_RE.match(tl) or tl in _BARE_CAPS:
+            break
+        key.append(tl)
+    return ' '.join(key) if key else clean.lower().strip()
+
 async def handle_search(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = (update.message.text or "").strip()
     query = re.sub(r'[*_`\[\]]', '', query).strip()  # чистим символы, ломающие разметку
@@ -798,12 +813,22 @@ async def category_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     track_user(q.from_user.id)
     stats["categories"][cat_key] = stats["categories"].get(cat_key, 0) + 1
     lines = [f"*{cat['name']}*\n"]
+    pending_sep = None   # разделитель показываем, только если под ним есть товары
+    last_key = None
     for item in cat["items"]:
         if item['price'] == 0:
-            lines.append(f"\n{item['name']}")
-        else:
-            price_str = f"{get_price(item['price'], cat_key):,}".replace(",", " ")
-            lines.append(f"• {item['name']}\n   💰 {price_str} ₽")
+            pending_sep = item['name']
+            last_key = None
+            continue
+        if pending_sep:
+            lines.append(f"\n{pending_sep}")
+            pending_sep = None
+        gkey = _group_key(item['name'])
+        if last_key is not None and gkey != last_key:
+            lines.append("")   # пустая строка между разными моделями
+        last_key = gkey
+        price_str = f"{get_price(item['price'], cat_key):,}".replace(",", " ")
+        lines.append(f"• {item['name']}\n   💰 {price_str} ₽")
     text = "\n".join(lines)
     if len(text) > 4000:
         text = text[:4000] + "\n\n_...уточняйте у менеджера!_"
@@ -1160,4 +1185,4 @@ app.add_handler(CallbackQueryHandler(router))
 app.add_handler(InlineQueryHandler(inline_search))
 app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_price_update))
 print("Bot started!")
-app.run_polling() 
+app.run_polling()
