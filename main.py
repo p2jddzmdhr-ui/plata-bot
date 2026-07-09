@@ -834,7 +834,7 @@ async def category_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if len(text) > 4000:
         text = text[:4000] + "\n\n_...уточняйте у менеджера!_"
     kb = InlineKeyboardMarkup([
-        [InlineKeyboardButton("🛒 Заказать", url=order_link(cat['name']))],
+        [InlineKeyboardButton("🛒 Заказать", url=order_link(cat['name'], ask_details=True))],
         [InlineKeyboardButton("◀️ Назад", callback_data="catalog")],
     ])
     await q.edit_message_text(text, reply_markup=kb, parse_mode="Markdown")
@@ -917,9 +917,12 @@ def fmt(price: int) -> str:
     return f"{price:,}".replace(",", " ")
 # ═══════════════════════════════════════════════════════════════
 
-def order_link(item_text: str) -> str:
-    """Ссылка на менеджера с уже вписанным товаром."""
-    msg = f"Здравствуйте!\n\nХочу заказать:\n{item_text}\n\nЦвет: \nПамять: "
+def order_link(item_text: str, ask_details: bool = False) -> str:
+    """Ссылка на менеджера с уже вписанным товаром.
+    ask_details=True добавляет поля Цвет/Память (для заказа из каталога, где товар не уточнён)."""
+    msg = f"Здравствуйте!\n\nХочу заказать:\n{item_text}"
+    if ask_details:
+        msg += "\n\nЦвет: \nПамять: "
     return f"https://t.me/{MANAGER}?text={quote(msg)}"
 
 async def handle_card_reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
