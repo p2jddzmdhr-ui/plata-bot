@@ -17,7 +17,7 @@ MARKUP = {
     "iphone": 0.05,
     "samsung": 0.05,
     "samsung_watch": 0.15,
-    "macbook": 0.10,
+    "macbook": 0.05,
     "ipad": 0.10,
     "airpods": 0.15,
     "watch": 0.15,
