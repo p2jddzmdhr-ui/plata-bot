@@ -17,7 +17,7 @@ MARKUP = {
     "iphone": 0.05,
     "samsung": 0.05,
     "samsung_watch": 0.15,
-    "macbook": 0.07,
+    "macbook": 0.10,
     "ipad": 0.10,
     "airpods": 0.15,
     "watch": 0.15,
@@ -957,7 +957,7 @@ def build_board_text():
         new_prices[e["label"]] = p
         old = BOARD["prices"].get(e["label"])
         if old and p < old:
-            lines.append(f"{e['label']}\n🔻 *{fmt(p)} ₽* (было {fmt(old)})")
+            lines.append(f"{e['label']} — от *{fmt(p)} ₽* 🔻 (было {fmt(old)})")
             drops += 1
         else:
             lines.append(f"{e['label']} — от *{fmt(p)} ₽*")
