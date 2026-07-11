@@ -5,6 +5,7 @@ import asyncio
 import hashlib
 import logging
 from urllib.parse import quote
+from datetime import datetime, timezone, timedelta
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, InlineQueryResultArticle, InputTextMessageContent
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, InlineQueryHandler, filters, ContextTypes
 
@@ -903,6 +904,75 @@ BOT_DATA_FILE = os.path.join(DATA_DIR, "bot_data.json")
 SUBS = []  # подписки на снижение цены: {"user": id, "query": "16 pro", "price": 74000}
 INLINE_CACHE = {}  # id подсказки -> название товара (для кнопки 🔔 на карточках)
 
+# ══════════ Живое табло цен в канале ══════════
+CHANNEL_USERNAME = "@PlataShop1"
+# Ходовые модели для табло. label — как показывать, q — поисковый запрос,
+# skip — исключить товары, в названии которых есть эти слова. None — пустая строка между группами
+HOT_MODELS = [
+    {"label": "🍎 iPhone 17 Pro Max", "q": "iphone 17 pro max"},
+    {"label": "🍎 iPhone 17 Pro", "q": "iphone 17 pro", "skip": ["max"]},
+    {"label": "🍎 iPhone 17 Air", "q": "iphone 17 air"},
+    {"label": "🍎 iPhone 17", "q": "iphone 17", "skip": ["pro", "air", "17e"]},
+    {"label": "🍎 iPhone 17e", "q": "iphone 17e"},
+    {"label": "🍎 iPhone 16 Pro", "q": "iphone 16 pro", "skip": ["max"]},
+    None,
+    {"label": "📱 Samsung S26 Ultra", "q": "samsung s26 ultra"},
+    {"label": "📱 Samsung Z Flip 7", "q": "samsung z flip"},
+    None,
+    {"label": "💻 MacBook Pro", "q": "macbook pro", "skip": ["neo"]},
+    {"label": "💻 MacBook Air 13", "q": "macbook air 13"},
+    {"label": "💻 MacBook Neo", "q": "macbook neo"},
+    None,
+    {"label": "🎧 AirPods Pro", "q": "airpods pro"},
+    {"label": "🌪 Dyson слайдер", "q": "hs0"},
+    {"label": "🌪 Dyson выпрямитель", "q": "dyson airstrait"},
+    {"label": "🎮 Sony PS5", "q": "ps5 digital"},
+]
+BOARD = {"msg_id": None, "prices": {}}  # id поста-табло в канале и цены на момент прошлого обновления
+
+def board_price(entry):
+    """Минимальная цена по ходовой модели."""
+    results = search_catalog(entry["q"])
+    skip = entry.get("skip", [])
+    prices = [get_price(i["price"], c) for c, i in results
+              if not any(s in i["name"].lower() for s in skip)]
+    return min(prices) if prices else None
+
+def build_board_text():
+    """Собирает текст табло. Возвращает (текст, новые цены, число снижений).
+    Товары, которых нет в каталоге, не показываются; пустые группы схлопываются."""
+    lines = ["📊 *Цены Plata на сегодня*\n"]
+    new_prices, drops = {}, 0
+    pending_gap, shown = False, 0
+    for e in HOT_MODELS:
+        if e is None:
+            pending_gap = True
+            continue
+        p = board_price(e)
+        if p is None:
+            continue  # товара нет в прайсе — строка скрыта, вернётся сама
+        if pending_gap and shown:
+            lines.append("")
+        pending_gap = False
+        new_prices[e["label"]] = p
+        old = BOARD["prices"].get(e["label"])
+        if old and p < old:
+            lines.append(f"{e['label']}\n🔻 *{fmt(p)} ₽* (было {fmt(old)})")
+            drops += 1
+        else:
+            lines.append(f"{e['label']} — от *{fmt(p)} ₽*")
+        shown += 1
+    msk = datetime.now(timezone(timedelta(hours=3)))
+    lines.append(f"\n_Обновлено: {msk.strftime('%d.%m')}_")
+    lines.append("Полный каталог, поиск и заказ — у бота 👇")
+    return "\n".join(lines), new_prices, drops
+
+def board_kb():
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton("🔍 Открыть каталог и узнать цену", url="https://t.me/plata_shop_bot")],
+    ])
+# ═══════════════════════════════════════════════
+
 def save_catalog():
     try:
         with open(CATALOG_FILE, "w", encoding="utf-8") as f:
@@ -925,7 +995,7 @@ def load_catalog():
 def save_bot_data():
     try:
         with open(BOT_DATA_FILE, "w", encoding="utf-8") as f:
-            json.dump({"users": list(stats["users"]), "subs": SUBS}, f, ensure_ascii=False)
+            json.dump({"users": list(stats["users"]), "subs": SUBS, "board": BOARD}, f, ensure_ascii=False)
     except Exception as e:
         log.error(f"Не удалось сохранить данные: {e}")
 
@@ -937,6 +1007,7 @@ def load_bot_data():
                 d = json.load(f)
             stats["users"].update(d.get("users", []))
             SUBS = d.get("subs", [])
+            BOARD.update(d.get("board", {}))
             log.info(f"Загружено: {len(stats['users'])} пользователей, {len(SUBS)} подписок")
     except Exception as e:
         log.error(f"Не удалось загрузить данные: {e}")
@@ -1113,9 +1184,28 @@ async def handle_price_update(update: Update, context: ContextTypes.DEFAULT_TYPE
             s["price"] = new_price
         save_bot_data()
 
+        # 📋 Обновляем живое табло в канале
+        board_note = ""
+        if BOARD.get("msg_id"):
+            btext, bprices, bdrops = build_board_text()
+            try:
+                await context.bot.edit_message_text(
+                    btext, chat_id=CHANNEL_USERNAME, message_id=BOARD["msg_id"],
+                    parse_mode="Markdown", reply_markup=board_kb())
+                BOARD["prices"] = bprices
+                save_bot_data()
+                board_note = f"\n📋 Табло в канале обновлено" + (f" ({bdrops} 🔻)" if bdrops else "")
+            except Exception as e:
+                if "not modified" in str(e).lower():
+                    board_note = "\n📋 Табло в канале уже актуально"
+                else:
+                    log.error(f"Не удалось обновить табло: {e}")
+                    board_note = "\n⚠️ Табло не обновилось — проверь, что бот админ канала"
+
         report = "\n".join(updated)
         if notified:
             report += f"\n\n🔔 Уведомлений о снижении цены: {notified}"
+        report += board_note
         await update.message.reply_text(f"✅ *Цены обновлены и сохранены!*\n\n{report}", parse_mode="Markdown")
         return
 
@@ -1285,6 +1375,41 @@ async def broadcast_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
             failed += 1
     await update.message.reply_text(f"📣 Готово! Отправлено: {sent}, не доставлено: {failed}")
 
+async def board_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Публикует живое табло цен в канал (один раз, дальше обновляется само)."""
+    if update.message.from_user.id not in ADMIN_IDS:
+        return
+    btext, bprices, _ = build_board_text()
+    try:
+        msg = await context.bot.send_message(
+            CHANNEL_USERNAME, btext, parse_mode="Markdown", reply_markup=board_kb())
+        BOARD["msg_id"] = msg.message_id
+        BOARD["prices"] = bprices
+        save_bot_data()
+        await update.message.reply_text(
+            "📋 Табло опубликовано в канале!\n\n"
+            "Закрепи его там, чтобы все видели. Дальше оно будет обновляться "
+            "само при каждом /done — новые посты не нужны.")
+    except Exception as e:
+        log.error(f"Не удалось опубликовать табло: {e}")
+        await update.message.reply_text(
+            f"⚠️ Не получилось опубликовать.\n\nПроверь, что бот добавлен админом "
+            f"канала {CHANNEL_USERNAME} с правом «Публикация сообщений», и попробуй /board ещё раз.")
+
+async def post_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Разовый громкий пост с текущими ценами — подписчики получат уведомление."""
+    if update.message.from_user.id not in ADMIN_IDS:
+        return
+    btext, _, _ = build_board_text()
+    try:
+        await context.bot.send_message(
+            CHANNEL_USERNAME, btext, parse_mode="Markdown", reply_markup=board_kb())
+        await update.message.reply_text("📣 Пост опубликован — подписчики получат уведомление!")
+    except Exception as e:
+        log.error(f"Не удалось опубликовать пост: {e}")
+        await update.message.reply_text(
+            f"⚠️ Не получилось. Проверь, что бот — админ канала {CHANNEL_USERNAME}.")
+
 load_catalog()
 load_bot_data()
 
@@ -1293,6 +1418,8 @@ app.add_handler(CommandHandler("start", start))
 app.add_handler(CommandHandler("done", handle_price_update))
 app.add_handler(CommandHandler("stats", stats_cmd))
 app.add_handler(CommandHandler("broadcast", broadcast_cmd))
+app.add_handler(CommandHandler("board", board_cmd))
+app.add_handler(CommandHandler("post", post_cmd))
 app.add_handler(CallbackQueryHandler(router))
 app.add_handler(InlineQueryHandler(inline_search))
 app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_price_update))
