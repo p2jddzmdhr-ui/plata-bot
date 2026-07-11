@@ -941,7 +941,7 @@ def board_price(entry):
 def build_board_text():
     """Собирает текст табло. Возвращает (текст, новые цены, число снижений).
     Товары, которых нет в каталоге, не показываются; пустые группы схлопываются."""
-    lines = ["📊 *Цены Plata на сегодня*\n"]
+    lines = ["🔥 *Plata · Топ-позиции и цены*\n"]
     new_prices, drops = {}, 0
     pending_gap, shown = False, 0
     for e in HOT_MODELS:
