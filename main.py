@@ -633,19 +633,26 @@ def parse_price_line(line: str):
     line = line.strip()
     if not line:
         return None
-    price_match = re.search(r'-(\d{4,6})', line)
-    if not price_match:
+    if '1:1' in line:
+        return None  # реплики не берём в каталог
+    # Берём ПОСЛЕДНЮЮ цену в строке: ёмкость батареи (🔋-13000) и артикулы (WH-1000XM6)
+    # стоят раньше настоящей цены. Пробел после дефиса допускаем («Проектор- 33500»)
+    matches = list(re.finditer(r'-\s?(\d{3,6})', line))
+    if not matches:
         return None
-    price = int(price_match.group(1))
-    if price < 1000:
+    m = matches[-1]
+    price = int(m.group(1))
+    if price < 500:
         return None
-    name = line[:price_match.start()].strip()
+    name = line[:m.start()].strip()
     if not name:
         return None
     return name, price
 
 def detect_category(line: str):
-    if any(x in line for x in ['Nitro', 'VivoBook', 'ZenBook', 'TUF', 'ROG', 'Legion', 'Katana', 'Vector', 'Titan', 'MateBook', 'ProBook', 'IdeaPad', 'Гравитон', 'Gigabyte', 'Machcreator', 'Raider', 'Samsung Book', 'Book 6']):
+    if any(x in line for x in ['Адаптер', 'адаптер', 'АЗУ', 'СЗУ']):
+        return 'accessories'
+    if any(x in line for x in ['Nitro', 'VivoBook', 'ZenBook', 'TUF', 'ROG', 'Legion', 'Katana', 'Vector', 'Titan', 'MateBook', 'MagicBook', 'ProBook', 'IdeaPad', 'Гравитон', 'Gigabyte', 'Machcreator', 'Raider', 'MSI', 'Cyborg', 'Tecno', 'MegaBook', 'Thunderobot', 'Samsung Book', 'Book 6']):
         return 'laptops'
     if any(x in line for x in ['HONOR', 'Huawei']):
         return 'honor'
@@ -662,15 +669,17 @@ def detect_category(line: str):
             return 'iphone' 
     if any(x in line for x in ['iPad', 'ipad']):
         return 'ipad'
+    if 'Pencil' in line and 'Dyson' not in line:
+        return 'ipad'  # Apple Pencil -> в аксессуары iPad (не путаем с Dyson Pencil Wash)
     if any(x in line for x in ['AirPods', 'EarPods']):
         return 'airpods'
     if any(x in line for x in ['Watch SE', 'Watch S1', 'Watch Ultra', 'Watch S10', 'Watch S11', 'Se 2 ', 'Se 3 ', 'S10 4', 'S11 4', 'Ultra 3 4', 'Ultra 2 4']):
         return 'watch'
-    if any(x in line for x in ['Samsung', 'A07', 'A26', 'A36', 'A37', 'A56', 'A57', 'S25', 'S26', 'Z Flip', 'Z Fold', 'Galaxy', 'Tab S']):
+    if any(x in line for x in ['Samsung', 'A07', 'A17', 'A26', 'A36', 'A37', 'A56', 'A57', 'S25', 'S26', 'Z Flip', 'Z Fold', 'Galaxy', 'Tab S']):
         return 'samsung'
     if 'POCO' in line:
         return 'poco'
-    if any(x in line for x in ['Xiaomi', 'Redmi', 'Mi Pad', 'Mi 15', 'Mi 17', 'Note 14', 'Note 15']):
+    if any(x in line for x in ['Xiaomi', 'Redmi', 'Mi Pad', 'Mi 15', 'Mi 17', 'Note 14', 'Note 15', '15C']):
         return 'xiaomi'
     if 'Pixel' in line:
         return 'pixel'
@@ -682,9 +691,9 @@ def detect_category(line: str):
         return 'vacuum'
     if 'Робот' in line and 'Dreame' not in line:
         return 'vacuum'
-    if any(x in line for x in ['Dyson', 'Dreame', 'HT01', 'HD18', 'HS08', 'HS09']):
+    if any(x in line for x in ['Dyson', 'Dreame', 'HT01', 'HD16', 'HD17', 'HD18', 'HS08', 'HS09', 'PH05']):
         return 'dyson'
-    if any(x in line for x in ['Insta', 'DJI', 'Osmo']):
+    if any(x in line for x in ['Insta', 'DJI', 'Osmo', 'GoPro']):
         return 'cameras'
     if 'GARMIN' in line:
         return 'garmin'
@@ -692,9 +701,9 @@ def detect_category(line: str):
         return 'gaming'
     if any(x in line for x in ['JBL', 'Станция', 'SberBoom', 'Marshall', 'Sennheiser', 'Sony WH', 'Momentum', 'Капсула']):
         return 'speakers'
-    if any(x in line for x in ['Unihertz', 'DOOGEE', 'Oukitel', 'Ulefone', 'BV BL', 'Tank 3']):
+    if any(x in line for x in ['Unihertz', 'DOOGEE', 'Oukitel', 'Ulefone', 'Blackview', 'BV ', 'Tank ']):
         return 'rugged'
-    if any(x in line for x in ['Battery Pack', 'MagSafe', 'Apple Adapter', 'СЗУ Apple', 'Pitaka', 'Kindle', 'СЗУ MacBook', '67W USB-C', '87W USB-C', '96W USB-C', '140W USB-C', '25W СЗУ', '45W СЗУ', '60W СЗУ', '65W СЗУ', 'АЗУ Samsung']):
+    if any(x in line for x in ['Battery Pack', 'MagSafe', 'Apple Adapter', 'СЗУ Apple', 'Pitaka', 'Kindle', 'СЗУ MacBook', '67W USB-C', '87W USB-C', '96W USB-C', '140W USB-C', '25W СЗУ', '45W СЗУ', '60W СЗУ', '65W СЗУ', 'АЗУ Samsung', 'Кабель', 'кабель', 'Диктофон', 'Mobvoi']):
         return 'accessories'
     return None
     
@@ -1121,7 +1130,7 @@ async def handle_price_update(update: Update, context: ContextTypes.DEFAULT_TYPE
                         "realme": [("realme c", ["c100"]), ("realme p", ["p3","16 pro"]), ("realme gt", ["gt7","gt8"])],
                         "speakers": [("умные", ["sber","яндекс","vk","капсула"]), ("jbl", ["jbl"]), ("наушник", ["sennheiser","marshall","sony wh","tune"])],
                         "rugged": [("unihertz", ["unihertz","tank"]), ("blackview", ["bv bl","bv 6200","bl 9000"]), ("doogee", ["doogee"]), ("oukitel", ["oukitel","wp"]), ("ulefone", ["ulefone","armor"])],
-                        "cameras": [("insta360", ["insta","360"]), ("dji", ["dji","osmo","mic"])],
+                        "cameras": [("insta360", ["insta","360"]), ("dji", ["dji","osmo","mic","gopro"])],
                         "accessories": [("чехлы", ["pitaka"]), ("apple аксессуары", ["battery pack","magsafe","apple adapter","сзу applewatch","сзу apple"]), ("сзу macbook", ["сзу macbook","67w","87w","96w","140w"]), ("samsung аксессуары", ["25w сзу","45w сзу","60w сзу","65w сзу","азу samsung"]), ("другое", ["kindle"])],
                     }
                     if category == "iphone":
