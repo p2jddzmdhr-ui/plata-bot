@@ -612,6 +612,23 @@ def get_price(base_price: int, category: str = "iphone") -> int:
     markup = MARKUP.get(category, 0.10)
     return round(base_price * (1 + markup) / 100) * 100
 
+def annotate_markups():
+    """Помечает товары под разделителем «Аксессуары» внутри любой категории,
+    чтобы они считались с наценкой аксессуаров, оставаясь на своём месте в каталоге."""
+    for ck, cat in CATALOG.items():
+        current = ck
+        for item in cat["items"]:
+            if item["price"] == 0:
+                current = "accessories" if "аксессуар" in item["name"].lower() else ck
+            elif current != ck:
+                item["mk"] = current
+            else:
+                item.pop("mk", None)
+
+def price_of(cat_key: str, item: dict) -> int:
+    """Цена товара с учётом персональной наценки (аксессуары внутри других категорий)."""
+    return get_price(item["price"], item.get("mk", cat_key))
+
 def parse_price_line(line: str):
     line = line.strip()
     if not line:
@@ -794,7 +811,7 @@ async def handle_search(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if cat_key != last_cat:
             lines.append(f"\n{CATALOG[cat_key]['name']}")
             last_cat = cat_key
-        price_str = f"{get_price(item['price'], cat_key):,}".replace(",", " ")
+        price_str = f"{price_of(cat_key, item):,}".replace(",", " ")
         lines.append(f"• {item['name']}\n   💰 {price_str} ₽")
         shown += 1
     if len(results) > 15:
@@ -872,7 +889,7 @@ async def category_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if last_key is not None and gkey != last_key:
             lines.append("")   # пустая строка между разными моделями
         last_key = gkey
-        price_str = f"{get_price(item['price'], cat_key):,}".replace(",", " ")
+        price_str = f"{price_of(cat_key, item):,}".replace(",", " ")
         lines.append(f"• {item['name']}\n   💰 {price_str} ₽")
     text = "\n".join(lines)
     if len(text) > 4000:
@@ -934,7 +951,7 @@ def board_price(entry):
     """Минимальная цена по ходовой модели."""
     results = search_catalog(entry["q"])
     skip = entry.get("skip", [])
-    prices = [get_price(i["price"], c) for c, i in results
+    prices = [price_of(c, i) for c, i in results
               if not any(s in i["name"].lower() for s in skip)]
     return min(prices) if prices else None
 
@@ -1022,7 +1039,7 @@ def min_price_for(query: str):
     results = search_catalog(query)
     if not results:
         return None
-    return min(get_price(item["price"], cat_key) for cat_key, item in results)
+    return min(price_of(cat_key, item) for cat_key, item in results)
 
 def qhash(uid: int, query: str) -> str:
     return hashlib.md5(f"{uid}:{query}".encode()).hexdigest()[:12]
@@ -1159,6 +1176,7 @@ async def handle_price_update(update: Update, context: ContextTypes.DEFAULT_TYPE
                 updated.append(f"{CATALOG[category]['name']} — {len(items)} позиций")
 
         price_buffer.clear()
+        annotate_markups()
         save_catalog()
 
         # 🔔 Уведомляем подписчиков о снижении цен
@@ -1411,6 +1429,7 @@ async def post_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"⚠️ Не получилось. Проверь, что бот — админ канала {CHANNEL_USERNAME}.")
 
 load_catalog()
+annotate_markups()
 load_bot_data()
 
 app = Application.builder().token(BOT_TOKEN).build()
